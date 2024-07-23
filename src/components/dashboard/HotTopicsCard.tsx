@@ -6,6 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from "../ui/card";
+import CustomWordCloud from "../CustomWordCloud";
 
 type Props = {};
 
@@ -16,6 +17,7 @@ const HotTopicsCard = (props: Props) => {
         <CardTitle className="text-2xl font-bold">Hot topics</CardTitle>
         <CardDescription>
           Click on a topic to start a quiz on it!
+          <CustomWordCloud></CustomWordCloud>
         </CardDescription>
       </CardHeader>
       <CardContent className="pl-2"></CardContent>
