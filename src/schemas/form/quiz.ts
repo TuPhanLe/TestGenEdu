@@ -36,3 +36,7 @@ export const quizCreationSchema = z
       path: ["questions"],
     }
   );
+export const checkAnswerSchema = z.object({
+  questionId: z.string(),
+  userInput: z.string(),
+});

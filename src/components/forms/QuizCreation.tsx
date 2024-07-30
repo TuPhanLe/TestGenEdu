@@ -36,12 +36,14 @@ import {
   FormMessage,
 } from "../ui/form";
 import axios from "axios";
+import { useRouter } from "next/navigation";
 type Props = {};
 
 type Input = z.infer<typeof quizCreationSchema>;
 
 const QuizCreation = (props: Props) => {
-  const { mutate: getQuestions, isLoading } = useMutation({
+  const router = useRouter();
+  const { mutate: getQuestions } = useMutation({
     mutationFn: async ({ topic, type, questions }: Input) => {
       const response = await axios.post("/api/game", {
         topic,
@@ -63,6 +65,26 @@ const QuizCreation = (props: Props) => {
           answer: "Jack",
           options: ["Decao", "Thang-Ngot", "Dat G"],
         },
+        {
+          question: "Ai la nguoi dep trai nhat?",
+          answer: "Tus",
+          options: ["Khoa", "Khanh", "Anh Tri"],
+        },
+        {
+          question: "Who let the dog outt???",
+          answer: "Jack",
+          options: ["Decao", "Thang-Ngot", "Dat G"],
+        },
+        {
+          question: "Trai dat hinh gi?",
+          answer: "Tron",
+          options: ["Ellip", "Chu nhat", "Vuong"],
+        },
+        {
+          question: " Ba Ria Vung Tau nam o phia nao cua TPHCM?",
+          answer: "Dong",
+          options: ["Tay", "Nam", "Bac"],
+        },
       ],
     },
   });
@@ -81,7 +103,9 @@ const QuizCreation = (props: Props) => {
       },
       {
         onSuccess: ({ gameId }) => {
-          alert(gameId);
+          if (form.getValues("type") === "mcq") {
+            router.push(`/play/mcq/${gameId}`);
+          }
         },
       }
     );

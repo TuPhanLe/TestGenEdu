@@ -32,6 +32,7 @@ export const POST = async (req: Request) => {
 
     if (type === "mcq") {
       let manyData = questions.map((question) => {
+        question.options.push(question.answer);
         let options = question.options;
         options = options.sort(() => Math.random() - 0.5);
 
@@ -52,8 +53,8 @@ export const POST = async (req: Request) => {
 
       return NextResponse.json(
         {
-          manyData: manyData,
-          game: game,
+          gameId: game.id,
+          game: game.userId,
         },
         {
           status: 200,
