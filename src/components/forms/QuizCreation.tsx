@@ -20,6 +20,7 @@ import {
 } from "../ui/form";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+import LoadingQuestion from "../LoadingQuestion";
 
 type Props = {};
 
@@ -27,6 +28,8 @@ type Input = z.infer<typeof quizCreationSchema>;
 
 const QuizCreation = (props: Props) => {
   const router = useRouter();
+  const [showLoader, setShowLoader] = React.useState(false);
+  const [finished, setFinished] = React.useState(false);
   const [addQuestionBut, setAddQuestionBut] = useState<boolean>(false);
   const { mutate: getQuestions } = useMutation({
     mutationFn: async ({ topic, type, paragraphs }: Input) => {
@@ -140,13 +143,23 @@ const QuizCreation = (props: Props) => {
   }, [addQuestionBut]);
 
   function onSubmit(data: Input) {
+    setShowLoader(true);
     getQuestions(data, {
       onSuccess: ({ gameId }) => {
-        if (form.getValues("type") === "mcq") {
-          router.push(`/play/mcq/${gameId}`);
-        }
+        setFinished(true);
+        setTimeout(() => {
+          if (form.getValues("type") === "mcq") {
+            router.push(`/play/mcq/${gameId}`);
+          }
+        }, 2000);
+      },
+      onError: () => {
+        setShowLoader(false);
       },
     });
+  }
+  if (showLoader) {
+    return <LoadingQuestion finished={finished} />;
   }
 
   return (

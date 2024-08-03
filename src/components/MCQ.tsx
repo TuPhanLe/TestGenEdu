@@ -37,6 +37,11 @@ const MCQ = ({ game }: Props) => {
   const [hasEnded, setHasEnded] = React.useState<boolean>(false);
   const [now, setNow] = React.useState<Date>(new Date());
   const { toast } = useToast();
+  const [isMounted, setIsMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   React.useEffect(() => {
     const interval = setInterval(() => {
@@ -140,7 +145,8 @@ const MCQ = ({ game }: Props) => {
       <div className="absolute flex flex-col justify-center top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 ">
         <div className="px-4 mt-2 font-semibold text-white bg-green-500 whitespace-nowrap">
           You completed in{" "}
-          {formatTimeDelta(differenceInSeconds(now, game.timeStarted))}
+          {isMounted &&
+            formatTimeDelta(differenceInSeconds(now, game.timeStarted))}
         </div>
         <Link
           href={`/statistics/${game.id}`}
@@ -166,7 +172,8 @@ const MCQ = ({ game }: Props) => {
           </p>
           <div className="flex self-start mt-3 text-slate-400">
             <Timer className="mr-2" />
-            {formatTimeDelta(differenceInSeconds(now, game.timeStarted))}
+            {isMounted &&
+              formatTimeDelta(differenceInSeconds(now, game.timeStarted))}
           </div>
         </div>
         <MCQCounter
