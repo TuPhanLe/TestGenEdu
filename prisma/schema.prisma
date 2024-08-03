@@ -45,38 +45,56 @@ model User {
   image         String?
   accounts      Account[]
   sessions      Session[]
-  Game          Game[]
+  games         Game[]
 }
 
 enum GameType {
   mcq
   open_ended
+  true_false
+  matching
+  fillup
+  rewrite
 }
 
 model Game {
-  id          String     @id @default(cuid())
+  id          String       @id @default(cuid())
   userId      String
   timeStarted DateTime
   topic       String
   timeEnded   DateTime?
-  question    Question[]
+  paragraphs  Paragraph[]
+  questions   Question[]
   gameType    GameType
-  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId], name: "userId")
+}
+
+model Paragraph {
+  id       String     @id @default(cuid())
+  gameId   String
+  content  String     @db.Text
+  questions Question[]
+  game     Game       @relation(fields: [gameId], references: [id], onDelete: Cascade)
+
+  @@index([gameId], name: "gameId")
 }
 
 model Question {
   id                String   @id @default(cuid())
   question          String
   answer            String
-  gameId            String
+  gameId            String?
+  paragraphId       String?
   options           Json? // for mcq question 
   percentageCorrect Float? // for open ended question 
   questionType      GameType
   userAnswer        String?
   isCorrect         Boolean?
-  game              Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  game              Game?     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  paragraph         Paragraph? @relation(fields: [paragraphId], references: [id], onDelete: Cascade)
 
   @@index([gameId], name: "gameId")
+  @@index([paragraphId], name: "paragraphId")
 }

@@ -1,6 +1,7 @@
 import MCQ from "@/components/MCQ";
 import { prisma } from "@/lib/db";
 import { getAuthSession } from "@/lib/nextauth";
+import { Game } from "@prisma/client";
 import { redirect } from "next/navigation";
 import React from "react";
 
@@ -20,19 +21,28 @@ const MCQpage = async ({ params: { gameId } }: Props) => {
       id: gameId,
     },
     include: {
-      question: {
+      paragraphs: {
         select: {
           id: true,
-          question: true,
-          options: true,
+          content: true,
+          questions: {
+            select: {
+              id: true,
+              question: true,
+              options: true,
+            },
+          },
         },
       },
     },
   });
+
   if (!game || game.gameType !== "mcq") {
     return redirect("/quiz");
   }
+
   return <MCQ game={game} />;
+  // return <div>{JSON.stringify(game)}</div>;
 };
 
 export default MCQpage;

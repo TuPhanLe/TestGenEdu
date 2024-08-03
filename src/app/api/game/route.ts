@@ -3,6 +3,7 @@ import { quizCreationSchema } from "@/schemas/form/quiz";
 import { ZodError } from "zod";
 import { getAuthSession } from "@/lib/nextauth";
 import { prisma } from "@/lib/db";
+import { GameType } from "@prisma/client";
 
 // POST /api/questions
 export const POST = async (req: Request) => {
@@ -19,8 +20,7 @@ export const POST = async (req: Request) => {
       );
     }
     const body = await req.json();
-    const { topic, type, questions } = quizCreationSchema.parse(body);
-
+    const { topic, type, paragraphs } = quizCreationSchema.parse(body);
     const game = await prisma.game.create({
       data: {
         gameType: type,
@@ -29,48 +29,52 @@ export const POST = async (req: Request) => {
         topic,
       },
     });
-
-    if (type === "mcq") {
-      let manyData = questions.map((question) => {
-        question.options.push(question.answer);
-        let options = question.options;
-        options = options.sort(() => Math.random() - 0.5);
-
+    const paragraphData = await Promise.all(
+      paragraphs.map(async (paragraph) => {
+        const createdParagraph = await prisma.paragraph.create({
+          data: {
+            gameId: game.id,
+            content: paragraph.paragraph,
+          },
+        });
         return {
-          gameId: game.id,
-          questionType: type,
+          paragraphId: createdParagraph.id,
+          questions: paragraph.questions,
+        };
+      })
+    );
+    const questionData = paragraphData.flatMap((paragraph) =>
+      paragraph.questions.map((question) => {
+        question.options.push(question.answer);
+        let options = question.options.sort(() => Math.random() - 0.5);
+        return {
           question: question.question,
           answer: question.answer,
           options: JSON.stringify(options),
-        };
-      });
-
-      console.log("manyData:", manyData); // Log dữ liệu để kiểm tra
-
-      await prisma.question.createMany({
-        data: manyData,
-      });
-
-      return NextResponse.json(
-        {
+          questionType: type,
+          paragraphId: paragraph.paragraphId,
           gameId: game.id,
-          game: game.userId,
-        },
-        {
-          status: 200,
-        }
-      );
-    } else {
-      // Handle other types of questions if necessary
-      return NextResponse.json(
-        {
-          message: "Only MCQ type is handled",
-        },
-        {
-          status: 400,
-        }
-      );
-    }
+        };
+      })
+    );
+    console.log(game);
+    console.log(paragraphData);
+    console.log(questionData);
+
+    await prisma.question.createMany({
+      data: questionData,
+    });
+
+    return NextResponse.json(
+      {
+        gameId: game.id,
+        game: game.userId,
+        manyData: questionData,
+      },
+      {
+        status: 200,
+      }
+    );
   } catch (error) {
     console.error("Error creating questions:", error);
     if (error instanceof ZodError) {

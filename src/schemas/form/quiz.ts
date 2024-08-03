@@ -12,30 +12,24 @@ const questionSchema = z.object({
   ),
 });
 
+const paragraphSchema = z.object({
+  paragraph: z
+    .string()
+    .min(4, { message: "Paragraph must be at least 4 charaters long" }),
+  questions: z.array(questionSchema),
+});
+
 // Define the main schema
-export const quizCreationSchema = z
-  .object({
-    topic: z
-      .string()
-      .min(4, { message: "Topic must be at least 4 characters long" })
-      .max(50, { message: "Topic must be no more than 50 characters long" }),
-    type: z.enum(["mcq", "open_ended"]),
-    questions: z.array(questionSchema),
-  })
-  .refine(
-    (data) => {
-      if (data.type === "mcq") {
-        return data.questions.every(
-          (question) => question.options && question.options.length > 0
-        );
-      }
-      return true;
-    },
-    {
-      message: "Each question must have options if the type is 'mcq'",
-      path: ["questions"],
-    }
-  );
+export const quizCreationSchema = z.object({
+  topic: z
+    .string()
+    .min(4, { message: "Topic must be at least 4 characters long" })
+    .max(50, { message: "Topic must be no more than 50 characters long" }),
+  type: z.enum(["mcq", "open_ended"]),
+
+  paragraphs: z.array(paragraphSchema),
+});
+
 export const checkAnswerSchema = z.object({
   questionId: z.string(),
   userInput: z.string(),

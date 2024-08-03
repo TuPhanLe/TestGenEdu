@@ -1,9 +1,15 @@
 "use client";
-import { Game, Question } from "@prisma/client";
+import { Game, Question, Paragraph } from "@prisma/client";
 import { differenceInSeconds } from "date-fns";
 import { BarChart, ChevronRight, Timer } from "lucide-react";
 import React from "react";
-import { Card, CardDescription, CardHeader, CardTitle } from "./ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "./ui/card";
 import { Button, buttonVariants } from "./ui/button";
 import MCQCounter from "./MCQCounter";
 import { useMutation } from "@tanstack/react-query";
@@ -13,11 +19,17 @@ import axios from "axios";
 import { useToast } from "./ui/use-toast";
 import Link from "next/link";
 import { cn, formatTimeDelta } from "@/lib/utils";
+
 type Props = {
-  game: Game & { question: Pick<Question, "id" | "question" | "options">[] };
+  game: Game & {
+    paragraphs: (Pick<Paragraph, "id" | "content"> & {
+      questions: Pick<Question, "id" | "question" | "options">[];
+    })[];
+  };
 };
 
 const MCQ = ({ game }: Props) => {
+  const [paragraphIndex, setParagraphIndex] = React.useState(0);
   const [questionIndex, setQuestionIndex] = React.useState(0);
   const [selectedChoice, setSelectedChoice] = React.useState<number>(0);
   const [correctAnswers, setCorrectAnswers] = React.useState<number>(0);
@@ -25,6 +37,7 @@ const MCQ = ({ game }: Props) => {
   const [hasEnded, setHasEnded] = React.useState<boolean>(false);
   const [now, setNow] = React.useState<Date>(new Date());
   const { toast } = useToast();
+
   React.useEffect(() => {
     const interval = setInterval(() => {
       if (!hasEnded) {
@@ -34,11 +47,15 @@ const MCQ = ({ game }: Props) => {
     return () => clearInterval(interval);
   }, [hasEnded]);
 
-  const currentQuestion = React.useMemo(() => {
-    console.log(game.question[questionIndex]);
+  const currentParagraph = React.useMemo(
+    () => game.paragraphs[paragraphIndex],
+    [paragraphIndex, game.paragraphs]
+  );
+  const currentQuestion = React.useMemo(
+    () => currentParagraph.questions[questionIndex],
+    [questionIndex, currentParagraph]
+  );
 
-    return game.question[questionIndex];
-  }, [questionIndex, game.question]);
   const { mutate: checkAnswer, isPending: isChecking } = useMutation({
     mutationFn: async () => {
       const payload: z.infer<typeof checkAnswerSchema> = {
@@ -69,18 +86,31 @@ const MCQ = ({ game }: Props) => {
           });
           setWrongAnswers((prev) => prev + 1);
         }
-        if (questionIndex === game.question.length - 1) {
-          setHasEnded(true);
-          return;
+        if (questionIndex === currentParagraph.questions.length - 1) {
+          if (paragraphIndex === game.paragraphs.length - 1) {
+            setHasEnded(true);
+            return;
+          }
+          setParagraphIndex((prev) => prev + 1);
+          setQuestionIndex(0);
+        } else {
+          setQuestionIndex((prev) => prev + 1);
         }
-        setQuestionIndex((prev) => prev + 1);
       },
     });
-  }, [checkAnswer, toast, isChecking, questionIndex, game.question.length]);
+  }, [
+    checkAnswer,
+    toast,
+    isChecking,
+    questionIndex,
+    currentParagraph.questions.length,
+    paragraphIndex,
+    game.paragraphs.length,
+  ]);
 
   React.useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key == "1") {
+      if (event.key === "1") {
         setSelectedChoice(0);
       } else if (event.key === "2") {
         setSelectedChoice(1);
@@ -145,12 +175,23 @@ const MCQ = ({ game }: Props) => {
         />
       </div>
 
+      {/* Card for Paragraph Content */}
+      <Card className="w-full mt-4">
+        <CardHeader>
+          <CardTitle>Paragraph {paragraphIndex + 1}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p>{currentParagraph?.content}</p>
+        </CardContent>
+      </Card>
+
+      {/* Card for Question */}
       <Card className="w-full mt-4">
         <CardHeader className="flex flex-row items-center">
           <CardTitle className="mr-5 text-center divide-y divide-zinc-600/50">
-            <div>{questionIndex + 1}</div>
+            <div>Question {questionIndex + 1}</div>
             <div className="text-base text-slate-400">
-              {game.question.length}
+              {currentParagraph?.questions.length}
             </div>
           </CardTitle>
           <CardDescription className="flex-grow text-lg">
@@ -158,6 +199,7 @@ const MCQ = ({ game }: Props) => {
           </CardDescription>
         </CardHeader>
       </Card>
+
       <div className="flex flex-col items-center justify-center w-full mt-4">
         {options.map((option, index) => {
           return (

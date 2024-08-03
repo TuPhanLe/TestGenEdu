@@ -1,12 +1,6 @@
 "use client";
-import React from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "../ui/card";
+import React, { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { useFieldArray, useForm, Controller } from "react-hook-form";
 import { quizCreationSchema } from "@/schemas/form/quiz";
 import { z } from "zod";
@@ -14,18 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
-import {
-  BookOpen,
-  CopyCheck,
-  Trash,
-  Plus,
-  Image,
-  Video,
-  Text,
-  Delete,
-  Minus,
-} from "lucide-react";
-import { Separator } from "../ui/separator";
+import { Trash, Plus, ChevronDown, ChevronUp } from "lucide-react";
 import {
   Form,
   FormField,
@@ -37,18 +20,20 @@ import {
 } from "../ui/form";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+
 type Props = {};
 
 type Input = z.infer<typeof quizCreationSchema>;
 
 const QuizCreation = (props: Props) => {
   const router = useRouter();
+  const [addQuestionBut, setAddQuestionBut] = useState<boolean>(false);
   const { mutate: getQuestions } = useMutation({
-    mutationFn: async ({ topic, type, questions }: Input) => {
+    mutationFn: async ({ topic, type, paragraphs }: Input) => {
       const response = await axios.post("/api/game", {
         topic,
         type,
-        questions,
+        paragraphs,
       });
       return response.data;
     },
@@ -57,33 +42,58 @@ const QuizCreation = (props: Props) => {
   const form = useForm<Input>({
     resolver: zodResolver(quizCreationSchema),
     defaultValues: {
-      topic: "Semmester",
+      topic: "Semester",
       type: "mcq",
-      questions: [
+      paragraphs: [
         {
-          question: "Ai la nguoi bo con?",
-          answer: "Jack",
-          options: ["Decao", "Thang-Ngot", "Dat G"],
+          paragraph:
+            "In the heart of the Amazon rainforest lies a realm teeming with life and mystery. Towering trees stretch towards the sky, forming a lush canopy that shelters a diverse array of flora and fauna. Among the foliage, vibrant birds flit about, their colorful plumage a testament to nature's artistry. Beneath the dense undergrowth, elusive creatures like jaguars and sloths navigate their verdant domain with silent grace. Yet, this vibrant ecosystem faces threats from deforestation and human encroachment. Conservation efforts strive to protect this invaluable treasure trove of biodiversity.",
+          questions: [
+            {
+              question: "What is the main focus of the text?",
+              answer: "The biodiversity of the Amazon rainforest",
+              options: [
+                "The mysteries of the ocen",
+                "The history of acient civilizations",
+                "The exploration of outer space",
+              ],
+            },
+            {
+              question:
+                "Which of the following is mentioned as a threat to the Amazon rainforest?",
+              answer: "Pollution from factories",
+              options: [
+                "Snowstorms",
+                "Conservation efforts",
+                "Argicultural expansion",
+              ],
+            },
+          ],
         },
         {
-          question: "Ai la nguoi dep trai nhat?",
-          answer: "Tus",
-          options: ["Khoa", "Khanh", "Anh Tri"],
-        },
-        {
-          question: "Who let the dog outt???",
-          answer: "Jack",
-          options: ["Decao", "Thang-Ngot", "Dat G"],
-        },
-        {
-          question: "Trai dat hinh gi?",
-          answer: "Tron",
-          options: ["Ellip", "Chu nhat", "Vuong"],
-        },
-        {
-          question: " Ba Ria Vung Tau nam o phia nao cua TPHCM?",
-          answer: "Dong",
-          options: ["Tay", "Nam", "Bac"],
+          paragraph:
+            "In the heart of the Amazon rainforest lies a realm teeming with life and mystery. Towering trees stretch towards the sky, forming a lush canopy that shelters a diverse array of flora and fauna. Among the foliage, vibrant birds flit about, their colorful plumage a testament to nature's artistry. Beneath the dense undergrowth, elusive creatures like jaguars and sloths navigate their verdant domain with silent grace. Yet, this vibrant ecosystem faces threats from deforestation and human encroachment. Conservation efforts strive to protect this invaluable treasure trove of biodiversity.",
+          questions: [
+            {
+              question: "What is the main focus of the text?",
+              answer: "The biodiversity of the Amazon rainforest",
+              options: [
+                "The mysteries of the ocen",
+                "The history of acient civilizations",
+                "The exploration of outer space",
+              ],
+            },
+            {
+              question:
+                "Which of the following is mentioned as a threat to the Amazon rainforest?",
+              answer: "Pollution from factories",
+              options: [
+                "Snowstorms",
+                "Conservation efforts",
+                "Argicultural expansion",
+              ],
+            },
+          ],
         },
       ],
     },
@@ -91,34 +101,60 @@ const QuizCreation = (props: Props) => {
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
-    name: "questions",
+    name: "paragraphs",
   });
 
-  function onSubmit(data: Input) {
-    getQuestions(
-      {
-        topic: data.topic,
-        questions: data.questions,
-        type: data.type,
-      },
-      {
-        onSuccess: ({ gameId }) => {
-          if (form.getValues("type") === "mcq") {
-            router.push(`/play/mcq/${gameId}`);
-          }
-        },
-      }
+  const [expandedParagraphs, setExpandedParagraphs] = useState<number[]>([]);
+
+  const toggleExpandParagraph = (index: number) => {
+    setExpandedParagraphs((prev) =>
+      prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index]
     );
+  };
+
+  const handleAddQuestion = (index: number) => {
+    const currentQuestions = form.getValues(`paragraphs.${index}.questions`);
+    form.setValue(`paragraphs.${index}.questions`, [
+      ...currentQuestions,
+      { question: "", answer: "", options: ["", "", "", ""] },
+    ]);
+    setAddQuestionBut((prevState) => !prevState);
+  };
+
+  const handleRemoveQuestion = (paraIndex: number, qIndex: number) => {
+    const currentQuestions = form.getValues(
+      `paragraphs.${paraIndex}.questions`
+    );
+    if (currentQuestions.length > 1) {
+      form.setValue(
+        `paragraphs.${paraIndex}.questions`,
+        currentQuestions.filter((_, i) => i !== qIndex)
+      );
+    } else {
+      alert("You must have at least 1 question");
+    }
+  };
+
+  useEffect(() => {
+    // Add effect to handle changes or cleanup if needed
+  }, [addQuestionBut]);
+
+  function onSubmit(data: Input) {
+    getQuestions(data, {
+      onSuccess: ({ gameId }) => {
+        if (form.getValues("type") === "mcq") {
+          router.push(`/play/mcq/${gameId}`);
+        }
+      },
+    });
   }
-  form.watch();
 
   return (
     <div className="relative flex justify-center">
       <div className="w-1/2">
-        <Card>
+        <Card className="w-[1000px]">
           <CardHeader>
-            <CardTitle className="text-2xl font-bold">Quiz Creation</CardTitle>
-            <CardDescription>Choose a topic</CardDescription>
+            <CardTitle className="text-3xl font-bold">Test Creation</CardTitle>
           </CardHeader>
           <CardContent>
             <Form {...form}>
@@ -135,190 +171,210 @@ const QuizCreation = (props: Props) => {
                       <FormControl>
                         <Input placeholder="Enter a topic ..." {...field} />
                       </FormControl>
-                      <FormDescription>Please provide a topic.</FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                <div className="flex justify-between">
-                  <Button
-                    variant={
-                      form.getValues("type") === "mcq" ? "default" : "secondary"
-                    }
-                    className="w-1/2 rounded-none rounded-l-lg"
-                    onClick={() => form.setValue("type", "mcq")}
-                    type="button"
-                  >
-                    <CopyCheck className="w-4 h-4 mr-2" /> Multiple Choice
-                  </Button>
-                  <Separator orientation="vertical" />
-                  <Button
-                    variant={
-                      form.getValues("type") === "open_ended"
-                        ? "default"
-                        : "secondary"
-                    }
-                    className="w-1/2 rounded-none rounded-r-lg"
-                    onClick={() => form.setValue("type", "open_ended")}
-                    type="button"
-                  >
-                    <BookOpen className="w-4 h-4 mr-2" /> Open Ended
-                  </Button>
-                </div>
-                {fields.map((item, index) => (
-                  <Card key={item.id}>
-                    <CardHeader>
-                      <CardTitle className="text-1xl font-bold">
-                        Question {index + 1}
+                {fields.map((item, indexPara) => (
+                  <Card key={item.id} className="mb-4">
+                    <CardHeader className="flex justify-between items-center">
+                      <CardTitle className="text-2xl font-bold">
+                        Paragraph {indexPara + 1}
                       </CardTitle>
+                      <Button
+                        type="button"
+                        onClick={() => toggleExpandParagraph(indexPara)}
+                        className="ml-auto"
+                      >
+                        {expandedParagraphs.includes(indexPara) ? (
+                          <ChevronUp className="w-4 h-4" />
+                        ) : (
+                          <ChevronDown className="w-4 h-4" />
+                        )}
+                      </Button>
                     </CardHeader>
-                    <CardContent className="relative">
-                      <FormField
-                        control={form.control}
-                        name={`questions.${index}.question`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Question</FormLabel>
-                            <FormControl>
-                              <Input
-                                className="w-full"
-                                placeholder="Enter a question ..."
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormDescription>
-                              Please provide a question.
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name={`questions.${index}.answer`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Answer</FormLabel>
-                            <FormControl>
-                              <Input
-                                className="w-full"
-                                placeholder="Enter an answer ..."
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormDescription>
-                              Please provide an answer.
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      {form.getValues("type") === "mcq" && (
-                        <>
-                          {form
-                            .getValues(`questions.${index}.options`)
-                            .map((_, optIndex) => (
-                              <div
-                                key={optIndex}
-                                className="flex items-center w-full"
-                              >
+                    {expandedParagraphs.includes(indexPara) && (
+                      <CardContent>
+                        <FormField
+                          control={form.control}
+                          name={`paragraphs.${indexPara}.paragraph`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormControl>
+                                <Input
+                                  placeholder="Enter a paragraph ..."
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormDescription>
+                                Please provide a paragraph.
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        {form
+                          .getValues(`paragraphs.${indexPara}.questions`)
+                          .map((question, qIndex) => (
+                            <Card key={qIndex} className="mt-6 p-1 m-4">
+                              <CardHeader>
+                                <CardTitle className="text-1xl font-bold">
+                                  Question {qIndex + 1}
+                                </CardTitle>
+                              </CardHeader>
+                              <CardContent className="relative">
                                 <FormField
                                   control={form.control}
-                                  name={`questions.${index}.options.${optIndex}`}
+                                  name={`paragraphs.${indexPara}.questions.${qIndex}.question`}
                                   render={({ field }) => (
-                                    <FormItem className="flex-grow">
-                                      <FormLabel>
-                                        Option {optIndex + 1}
-                                      </FormLabel>
+                                    <FormItem>
                                       <FormControl>
                                         <Input
                                           className="w-full"
-                                          placeholder="Enter an option ..."
+                                          placeholder="Enter a question ..."
                                           {...field}
                                         />
                                       </FormControl>
                                       <FormDescription>
-                                        Please provide an option.
+                                        Please provide a question.
                                       </FormDescription>
                                       <FormMessage />
                                     </FormItem>
                                   )}
                                 />
-                                <Button
-                                  type="button"
-                                  onClick={() => {
-                                    const options =
-                                      form.getValues(
-                                        `questions.${index}.options`
-                                      ) ?? [];
-                                    if (options.length > 3) {
-                                      const newOptions = options.filter(
-                                        (_, i) => i !== optIndex
-                                      );
-                                      form.setValue(
-                                        `questions.${index}.options`,
-                                        newOptions
-                                      );
-                                    } else {
-                                      alert(
-                                        "You must have at least 3 options."
-                                      );
+                                <FormField
+                                  control={form.control}
+                                  name={`paragraphs.${indexPara}.questions.${qIndex}.answer`}
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Answer</FormLabel>
+                                      <FormControl>
+                                        <Input
+                                          className="w-full"
+                                          placeholder="Enter an answer ..."
+                                          {...field}
+                                        />
+                                      </FormControl>
+                                      <FormDescription>
+                                        Please provide an answer.
+                                      </FormDescription>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                                {form.getValues("type") === "mcq" && (
+                                  <>
+                                    {form
+                                      .getValues(
+                                        `paragraphs.${indexPara}.questions.${qIndex}.options`
+                                      )
+                                      .map((_, optIndex) => (
+                                        <div
+                                          key={optIndex}
+                                          className="flex items-center w-full"
+                                        >
+                                          <FormField
+                                            control={form.control}
+                                            name={`paragraphs.${indexPara}.questions.${qIndex}.options.${optIndex}`}
+                                            render={({ field }) => (
+                                              <FormItem className="flex-grow">
+                                                <FormLabel>
+                                                  Option {optIndex + 1}
+                                                </FormLabel>
+                                                <FormControl>
+                                                  <Input
+                                                    className="w-full"
+                                                    placeholder="Enter an option ..."
+                                                    {...field}
+                                                  />
+                                                </FormControl>
+                                                <FormDescription>
+                                                  Please provide an option.
+                                                </FormDescription>
+                                                <FormMessage />
+                                              </FormItem>
+                                            )}
+                                          />
+                                        </div>
+                                      ))}
+                                  </>
+                                )}
+                                <div className="absolute -top-20 -right-20 transform -translate-x-1/2 flex flex-col bg-white border border-gray-300 rounded-lg shadow-lg p-2 z-50">
+                                  <Button
+                                    className="block bg-none border-none my-2"
+                                    onClick={() =>
+                                      handleRemoveQuestion(indexPara, qIndex)
                                     }
-                                  }}
-                                >
-                                  <Trash />
-                                </Button>
-                              </div>
-                            ))}
-                          <Button
-                            type="button"
-                            onClick={() => {
-                              const options =
-                                form.getValues(`questions.${index}.options`) ??
-                                [];
-                              console.log(options);
-
-                              const newOptions = [...options, ""];
-                              form.setValue(
-                                `questions.${index}.options`,
-                                newOptions
-                              );
-                            }}
-                          >
-                            Add Option
-                          </Button>
-                        </>
-                      )}
-                      <div className="absolute -top-20 -right-20 transform -translate-x-1/2  flex flex-col bg-white border border-gray-300 rounded-lg shadow-lg p-2 z-50">
+                                  >
+                                    <Trash className="w-4 h-4" />
+                                  </Button>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          ))}
                         <Button
-                          onClick={() =>
-                            append({
-                              question: "",
-                              answer: "",
-                              options: ["", "", ""],
-                            })
-                          }
-                          className="block bg-none border-none my-2"
+                          type="button"
+                          onClick={() => handleAddQuestion(indexPara)}
+                          className="mt-4"
                         >
-                          <Plus className="w-4 h-4" />
+                          Add Question
                         </Button>
-                        <Button
-                          className="block bg-none border-none my-2"
-                          onClick={() => {
-                            if (index === 0) {
-                              alert("You must have at least 1 question");
-                            } else remove(index);
-                          }}
-                        >
-                          <Trash className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </CardContent>
+                      </CardContent>
+                    )}
                   </Card>
                 ))}
-                <Button type="submit">Submit</Button>
+
+                <Button type="submit" className="mt-4">
+                  Submit
+                </Button>
               </form>
             </Form>
+            <Button
+              onClick={() =>
+                append({
+                  paragraph: "alslaaaaaaaaaaaaaaaassaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                  questions: [
+                    {
+                      question:
+                        "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb1",
+                      answer:
+                        "cccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                      options: [
+                        "dddddddddddddddddddddddddddddddddddd",
+                        "hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh",
+                        "ggggggggggggggggggggggggg",
+                      ],
+                    },
+                    {
+                      question:
+                        "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                      answer:
+                        "cccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                      options: [
+                        "dddddddddddddddddddddddddddddddddddd",
+                        "hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh",
+                        "ggggggggggggggggggggggggg",
+                      ],
+                    },
+                    {
+                      question:
+                        "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                      answer:
+                        "cccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                      options: [
+                        "dddddddddddddddddddddddddddddddddddd",
+                        "hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh",
+                        "ggggggggggggggggggggggggg",
+                      ],
+                    },
+                  ],
+                })
+              }
+              className="mt-4"
+            >
+              Add Paragraph
+            </Button>
           </CardContent>
         </Card>
       </div>

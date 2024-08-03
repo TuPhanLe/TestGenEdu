@@ -17,12 +17,24 @@ const data = [
     value: 4,
   },
   {
-    text: "La con gai that tuyet",
+    text: "Luong Cong Khanh",
     value: 7,
   },
   {
-    text: "Ai la gay???",
+    text: "OPDA-ODMO",
     value: 4,
+  },
+  {
+    text: "Ha Phuc Hao",
+    value: 2,
+  },
+  {
+    text: "Bui Thanh Tinh",
+    value: 23,
+  },
+  {
+    text: "Mr. Nguyen Dinh Long",
+    value: 11,
   },
 ];
 
