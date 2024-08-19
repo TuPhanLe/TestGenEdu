@@ -1,5 +1,5 @@
 "use client";
-import { Game, Question, Paragraph } from "@prisma/client";
+import { Test, Question, Paragraph } from "@prisma/client";
 import { differenceInSeconds } from "date-fns";
 import { BarChart, ChevronRight, Timer } from "lucide-react";
 import React from "react";
@@ -21,7 +21,7 @@ import Link from "next/link";
 import { cn, formatTimeDelta } from "@/lib/utils";
 
 type Props = {
-  game: Game & {
+  game: Test & {
     paragraphs: (Pick<Paragraph, "id" | "content"> & {
       questions: Pick<Question, "id" | "question" | "options">[];
     })[];
@@ -149,7 +149,7 @@ const MCQ = ({ game }: Props) => {
             formatTimeDelta(differenceInSeconds(now, game.timeStarted))}
         </div>
         <Link
-          href={`/statistics/${game.id}`}
+          href={`/stu/statistics/${game.id}`}
           className={cn(buttonVariants(), "mt-2")}
         >
           View Statistics

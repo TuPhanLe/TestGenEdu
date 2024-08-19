@@ -1,7 +1,7 @@
 import MCQ from "@/components/MCQ";
 import { prisma } from "@/lib/db";
 import { getAuthSession } from "@/lib/nextauth";
-import { Game } from "@prisma/client";
+import { Test } from "@prisma/client";
 import { redirect } from "next/navigation";
 import React from "react";
 
@@ -16,7 +16,9 @@ const MCQpage = async ({ params: { gameId } }: Props) => {
   if (!session) {
     redirect("/");
   }
-  const game = await prisma.game.findUnique({
+  // console.log(gameId);
+
+  const test = await prisma.test.findUnique({
     where: {
       id: gameId,
     },
@@ -36,13 +38,13 @@ const MCQpage = async ({ params: { gameId } }: Props) => {
       },
     },
   });
+  console.log(test);
 
-  if (!game || game.gameType !== "mcq") {
+  if (!test || test.testType !== "mcq") {
     return redirect("/quiz");
   }
 
-  return <MCQ game={game} />;
-  // return <div>{JSON.stringify(game)}</div>;
+  return <MCQ game={test} />;
 };
 
 export default MCQpage;

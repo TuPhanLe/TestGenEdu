@@ -151,7 +151,7 @@ const QuizCreation = (props: Props) => {
         setFinished(true);
         setTimeout(() => {
           if (form.getValues("type") === "mcq") {
-            // router.push(`/play/mcq/${gameId}`);
+            router.push(`/stu/play/mcq/${gameId}`);
           }
         }, 2000);
       },

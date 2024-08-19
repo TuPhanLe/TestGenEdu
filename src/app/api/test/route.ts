@@ -57,9 +57,9 @@ export const POST = async (req: Request) => {
       })
     );
 
-    // await prisma.question.createMany({
-    //   data: questionData,
-    // });
+    await prisma.question.createMany({
+      data: questionData,
+    });
 
     return NextResponse.json(
       {

@@ -15,7 +15,7 @@ import { signOut } from "next-auth/react";
 import { LogOut } from "lucide-react";
 
 type Props = {
-  user: Pick<User, "name" | "image" | "email">;
+  user: Pick<User, "name" | "image" | "email" | "role">;
 };
 
 const UserAccountNav = ({ user }: Props) => {
@@ -27,6 +27,7 @@ const UserAccountNav = ({ user }: Props) => {
           user={{
             name: user.name || null,
             image: user.image || null,
+            // role: user.role || null,
           }}
         />
       </DropdownMenuTrigger>
@@ -43,7 +44,9 @@ const UserAccountNav = ({ user }: Props) => {
         </div>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          <Link href="/">Meow</Link>
+          <p className="w-[200px] truncate text-sm text-zinc-700">
+            {user.role}
+          </p>
         </DropdownMenuItem>
 
         <DropdownMenuSeparator />
