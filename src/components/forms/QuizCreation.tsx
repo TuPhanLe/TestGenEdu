@@ -21,6 +21,7 @@ import {
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import LoadingQuestion from "../LoadingQuestion";
+import { Textarea } from "../ui/textarea";
 
 type Props = {};
 
@@ -33,7 +34,7 @@ const QuizCreation = (props: Props) => {
   const [addQuestionBut, setAddQuestionBut] = useState<boolean>(false);
   const { mutate: getQuestions } = useMutation({
     mutationFn: async ({ topic, type, paragraphs }: Input) => {
-      const response = await axios.post("/api/game", {
+      const response = await axios.post("/api/test", {
         topic,
         type,
         paragraphs,
@@ -119,7 +120,7 @@ const QuizCreation = (props: Props) => {
     const currentQuestions = form.getValues(`paragraphs.${index}.questions`);
     form.setValue(`paragraphs.${index}.questions`, [
       ...currentQuestions,
-      { question: "", answer: "", options: ["", "", "", ""] },
+      { question: "", answer: "", options: ["", "", ""] },
     ]);
     setAddQuestionBut((prevState) => !prevState);
   };
@@ -133,6 +134,7 @@ const QuizCreation = (props: Props) => {
         `paragraphs.${paraIndex}.questions`,
         currentQuestions.filter((_, i) => i !== qIndex)
       );
+      setAddQuestionBut((prevState) => !prevState);
     } else {
       alert("You must have at least 1 question");
     }
@@ -149,7 +151,7 @@ const QuizCreation = (props: Props) => {
         setFinished(true);
         setTimeout(() => {
           if (form.getValues("type") === "mcq") {
-            router.push(`/play/mcq/${gameId}`);
+            // router.push(`/play/mcq/${gameId}`);
           }
         }, 2000);
       },
@@ -192,19 +194,15 @@ const QuizCreation = (props: Props) => {
                   <Card key={item.id} className="mb-4">
                     <CardHeader className="flex justify-between items-center">
                       <CardTitle className="text-2xl font-bold">
-                        Paragraph {indexPara + 1}
+                        <Button
+                          type="button"
+                          onClick={() => toggleExpandParagraph(indexPara)}
+                          className="ml-auto"
+                          size="lg"
+                        >
+                          Paragraph {indexPara + 1}{" "}
+                        </Button>
                       </CardTitle>
-                      <Button
-                        type="button"
-                        onClick={() => toggleExpandParagraph(indexPara)}
-                        className="ml-auto"
-                      >
-                        {expandedParagraphs.includes(indexPara) ? (
-                          <ChevronUp className="w-4 h-4" />
-                        ) : (
-                          <ChevronDown className="w-4 h-4" />
-                        )}
-                      </Button>
                     </CardHeader>
                     {expandedParagraphs.includes(indexPara) && (
                       <CardContent>
@@ -214,7 +212,12 @@ const QuizCreation = (props: Props) => {
                           render={({ field }) => (
                             <FormItem>
                               <FormControl>
-                                <Input
+                                {/* <Input
+                                  placeholder="Enter a paragraph ..."
+                                  {...field}
+                                /> */}
+                                <Textarea
+                                  className="w-full h-48"
                                   placeholder="Enter a paragraph ..."
                                   {...field}
                                 />
@@ -315,10 +318,12 @@ const QuizCreation = (props: Props) => {
                                 )}
                                 <div className="absolute -top-20 -right-20 transform -translate-x-1/2 flex flex-col bg-white border border-gray-300 rounded-lg shadow-lg p-2 z-50">
                                   <Button
+                                    type="button"
                                     className="block bg-none border-none my-2"
-                                    onClick={() =>
-                                      handleRemoveQuestion(indexPara, qIndex)
-                                    }
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleRemoveQuestion(indexPara, qIndex);
+                                    }}
                                   >
                                     <Trash className="w-4 h-4" />
                                   </Button>

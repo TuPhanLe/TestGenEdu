@@ -3,8 +3,8 @@ import { getAuthSession } from "@/lib/nextauth";
 import { redirect } from "next/navigation";
 import QuizCreation from "@/components/forms/QuizCreation";
 export const metadata = {
-  title: "TEST GEN EDU | Quizzzy",
-  description: "Quiz yourself on anything!",
+  title: "TEST GEN EDU | DNU",
+  description: "Let's make a Quiz!",
 };
 
 interface Props {

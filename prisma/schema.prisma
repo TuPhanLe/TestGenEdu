@@ -37,18 +37,26 @@ model Session {
   @@index([userId], name: "userId")
 }
 
+enum UserRole {
+  ADMIN
+  LECTURE
+  STUDENT
+}
+
 model User {
   id            String    @id @default(cuid())
   name          String?
   email         String?   @unique
   emailVerified DateTime?
   image         String?
+  role          UserRole  @default(STUDENT)
   accounts      Account[]
   sessions      Session[]
-  games         Game[]
+  tests         Test[]
+  folders       Folder[]
 }
 
-enum GameType {
+enum TestType {
   mcq
   open_ended
   true_false
@@ -57,44 +65,57 @@ enum GameType {
   rewrite
 }
 
-model Game {
+model Test {
   id          String       @id @default(cuid())
   userId      String
+  folderId    String?
   timeStarted DateTime
   topic       String
   timeEnded   DateTime?
   paragraphs  Paragraph[]
   questions   Question[]
-  gameType    GameType
+  testType    TestType
   user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  folder      Folder?      @relation(fields: [folderId], references: [id], onDelete: Cascade)
+
+  @@index([userId], name: "userId")
+  @@index([folderId], name: "folderId")
+}
+
+model Folder {
+  id       String    @id @default(cuid())
+  userId   String
+  name     String
+  tests    Test[]
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId], name: "userId")
 }
 
 model Paragraph {
   id       String     @id @default(cuid())
-  gameId   String
+  testId   String
   content  String     @db.Text
   questions Question[]
-  game     Game       @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  test     Test       @relation(fields: [testId], references: [id], onDelete: Cascade)
 
-  @@index([gameId], name: "gameId")
+  @@index([testId], name: "testId")
 }
 
 model Question {
   id                String   @id @default(cuid())
   question          String
   answer            String
-  gameId            String?
+  testId            String?
   paragraphId       String?
   options           Json? // for mcq question 
   percentageCorrect Float? // for open ended question 
-  questionType      GameType
+  questionType      TestType
   userAnswer        String?
   isCorrect         Boolean?
-  game              Game?     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  test              Test?      @relation(fields: [testId], references: [id], onDelete: Cascade)
   paragraph         Paragraph? @relation(fields: [paragraphId], references: [id], onDelete: Cascade)
 
-  @@index([gameId], name: "gameId")
+  @@index([testId], name: "testId")
   @@index([paragraphId], name: "paragraphId")
 }

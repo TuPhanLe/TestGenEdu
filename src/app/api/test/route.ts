@@ -3,9 +3,7 @@ import { quizCreationSchema } from "@/schemas/form/quiz";
 import { ZodError } from "zod";
 import { getAuthSession } from "@/lib/nextauth";
 import { prisma } from "@/lib/db";
-import { GameType } from "@prisma/client";
 
-// POST /api/questions
 export const POST = async (req: Request) => {
   try {
     const session = await getAuthSession();
@@ -21,19 +19,20 @@ export const POST = async (req: Request) => {
     }
     const body = await req.json();
     const { topic, type, paragraphs } = quizCreationSchema.parse(body);
-    const game = await prisma.game.create({
+    const test = await prisma.test.create({
       data: {
-        gameType: type,
+        testType: type,
         timeStarted: new Date(),
         userId: session.user.id,
         topic,
       },
     });
+
     const paragraphData = await Promise.all(
       paragraphs.map(async (paragraph) => {
         const createdParagraph = await prisma.paragraph.create({
           data: {
-            gameId: game.id,
+            testId: test.id,
             content: paragraph.paragraph,
           },
         });
@@ -53,22 +52,19 @@ export const POST = async (req: Request) => {
           options: JSON.stringify(options),
           questionType: type,
           paragraphId: paragraph.paragraphId,
-          gameId: game.id,
+          testId: test.id,
         };
       })
     );
-    console.log(game);
-    console.log(paragraphData);
-    console.log(questionData);
 
-    await prisma.question.createMany({
-      data: questionData,
-    });
+    // await prisma.question.createMany({
+    //   data: questionData,
+    // });
 
     return NextResponse.json(
       {
-        gameId: game.id,
-        game: game.userId,
+        gameId: test.id,
+        game: test.userId,
         manyData: questionData,
       },
       {
