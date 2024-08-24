@@ -20,18 +20,16 @@ type Props = {
 
 const UserAccountNav = ({ user }: Props) => {
   return (
-    <DropdownMenu>
+    <DropdownMenu modal={false}>
       <DropdownMenuTrigger>
         <UserAvatar
-          //   className="w-10 h-10"
           user={{
             name: user.name || null,
             image: user.image || null,
-            // role: user.role || null,
           }}
         />
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="bg-white" align="end">
+      <DropdownMenuContent className="bg-white z-50 " align="end">
         <div className="flex items-center justify-start gap-2 p-2">
           <div className="flex flex-col space-y-1 leading-none">
             {user.name && <p className="font-medium">{user.name}</p>}
@@ -44,7 +42,7 @@ const UserAccountNav = ({ user }: Props) => {
         </div>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          <p className="w-[200px] truncate text-sm text-zinc-700">
+          <p className="w-[200px] truncate text-sm text-zinc-700 flex">
             {user.role}
           </p>
         </DropdownMenuItem>
