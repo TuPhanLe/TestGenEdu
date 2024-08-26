@@ -18,20 +18,21 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { folderSchema } from "@/schemas/form/folder";
 import { Checkbox } from "../ui/checkbox";
-import { ScrollArea } from "../ui/scroll-area"; // Import your ScrollArea component
+import { ScrollArea } from "../ui/scroll-area";
 import { Separator } from "../ui/separator";
+import { Test } from "@prisma/client";
 
 interface Selections {
   [key: string]: boolean;
 }
 
-export default function AddFolder({
-  cardId,
-  setIsOpen,
-}: {
+type Props = {
   cardId: string;
-  setIsOpen: Dispatch<SetStateAction<boolean>>;
-}) {
+  setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  tests: Test[];
+};
+
+export const AddFolder: React.FC<Props> = ({ cardId, setIsOpen, tests }) => {
   type Input = z.infer<typeof folderSchema>;
 
   const form = useForm<z.infer<typeof folderSchema>>({
@@ -43,34 +44,25 @@ export default function AddFolder({
     },
   });
 
-  const options: string[] = [
-    "Test 1",
-    "Test 2",
-    "Test 3",
-    "Test 4",
-    "Test 3",
-    "Test 4",
-    "Test 3",
-    "Test 4",
-    "Test 3",
-    "Test 4",
-    "Test 3",
-    "Test 4",
-    "Test 3",
-    "Test 4",
-  ];
+  // Generate options with test names and createdAt dates
+  const options = tests.map((test) => ({
+    id: test.id,
+    label: `${test.topic} - ${new Date(
+      test.createdAt
+    ).toLocaleDateString()} ${new Date(test.createdAt).toLocaleTimeString()}`,
+  }));
 
   const [selections, setSelections] = useState<Selections>(
     options.reduce<Selections>(
-      (acc, option) => ({ ...acc, [option]: false }),
+      (acc, option) => ({ ...acc, [option.id]: false }),
       {}
     )
   );
 
-  const toggleSelection = (option: string) => {
+  const toggleSelection = (optionId: string) => {
     setSelections((prevSelections) => ({
       ...prevSelections,
-      [option]: !prevSelections[option],
+      [optionId]: !prevSelections[optionId],
     }));
   };
 
@@ -80,7 +72,7 @@ export default function AddFolder({
     try {
       // Capture the selected tests
       const selectedTest = Object.keys(selections).filter(
-        (option) => selections[option]
+        (optionId) => selections[optionId]
       );
 
       // Include selectedTest in the form values
@@ -146,19 +138,19 @@ export default function AddFolder({
         <ScrollArea className="max-h-60 p-4 border rounded-md">
           <div className="flex flex-col space-y-2">
             {options.map((option) => (
-              <>
-                <div key={option} className="flex items-center">
+              <React.Fragment key={option.id}>
+                <div className="flex items-center">
                   <Checkbox
-                    checked={selections[option]}
-                    onCheckedChange={() => toggleSelection(option)}
-                    id={option}
+                    checked={selections[option.id]}
+                    onCheckedChange={() => toggleSelection(option.id)}
+                    id={option.id}
                   />
-                  <label htmlFor={option} className="ml-2">
-                    {option}
+                  <label htmlFor={option.id} className="ml-2">
+                    {option.label}
                   </label>
                 </div>
                 <Separator />
-              </>
+              </React.Fragment>
             ))}
           </div>
         </ScrollArea>
@@ -184,4 +176,4 @@ export default function AddFolder({
       </form>
     </Form>
   );
-}
+};

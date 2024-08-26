@@ -23,7 +23,11 @@ export const POST = async (req: Request) => {
         userId: session.user.id,
       },
     });
-
+    const tests = await prisma.test.findMany({
+      where: {
+        userId: session.user.id,
+      },
+    });
     // Kiểm tra xem người dùng có thư mục nào không
     if (folders.length === 0) {
       return NextResponse.json(
@@ -40,6 +44,7 @@ export const POST = async (req: Request) => {
     return NextResponse.json(
       {
         folders: folders,
+        tests: tests,
       },
       {
         status: 200,

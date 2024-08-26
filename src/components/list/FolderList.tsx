@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { useMutation } from "@tanstack/react-query";
-import axios from "axios";
+
 import {
   CopyCheck,
-  Folder,
+  FolderArchiveIcon,
+  FolderCheckIcon,
+  Menu,
   MoreVertical,
   PlusCircleIcon,
   SquarePen,
@@ -16,57 +17,24 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
-import { Card } from "./ui/card";
-import { Button } from "./ui/button";
+import { Card } from "../ui/card";
+import { Button } from "../ui/button";
 
-import IconMenu from "./ui/iconmenu";
+import IconMenu from "../ui/iconmenu";
 import { DropdownMenuSeparator } from "@radix-ui/react-dropdown-menu";
-import { ResponsiveDialog } from "./forms/responsive-dialog";
-import AddFolder from "./forms/AddFolder";
-import DeleteForm from "./forms/DeleteFolder";
-import { Separator } from "./ui/separator";
-
-interface Folder {
-  id: string;
-  name: string;
-}
-
-const fetchFolders = async (): Promise<Folder[]> => {
-  const response = await axios.post("/api/folder");
-  const data = response.data;
-
-  // Trích xuất mảng thư mục từ đối tượng phản hồi
-  return data.folders;
+import { ResponsiveDialog } from "../forms/responsive-dialog";
+import { AddFolder } from "../forms/AddFolder";
+import DeleteForm from "../forms/DeleteFolder";
+import { Separator } from "../ui/separator";
+import { Folder, Test } from "@prisma/client";
+type Props = {
+  folders: Folder[];
+  tests: Test[];
 };
 
-const FolderList: React.FC = () => {
+const FolderList = ({ folders, tests }: Props) => {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-  const {
-    mutate: fetchFoldersData,
-    data: folders = [],
-    isPending,
-    isError,
-  } = useMutation({
-    mutationFn: fetchFolders,
-  });
-
-  useEffect(() => {
-    fetchFoldersData();
-  }, [fetchFoldersData]);
-
-  if (isPending) return <div></div>;
-  if (isError) return <div>Error loading folders</div>;
-
-  const handleDelete = (folderId: string) => {
-    // Thực hiện chức năng xóa folder
-    console.log(`Xóa folder với ID: ${folderId}`);
-  };
-
-  const handleEdit = (folderId: string) => {
-    // Thực hiện chức năng chỉnh sửa folder
-    console.log(`Chỉnh sửa folder với ID: ${folderId}`);
-  };
 
   return (
     <div className="space-y-8">
@@ -95,7 +63,11 @@ const FolderList: React.FC = () => {
             setIsOpen={setIsEditOpen}
             title="Folder"
           >
-            <AddFolder cardId={folder.id} setIsOpen={setIsEditOpen} />
+            <AddFolder
+              cardId={folder.id}
+              setIsOpen={setIsEditOpen}
+              tests={tests}
+            />
           </ResponsiveDialog>
           <ResponsiveDialog
             isOpen={isDeleteOpen}
@@ -110,7 +82,7 @@ const FolderList: React.FC = () => {
             key={folder.id}
           >
             <div className="flex items-center">
-              <Folder className="mr-3" />
+              <FolderCheckIcon className="mr-3" />
               <div className="ml-4 space-y-1">
                 <Link
                   className="text-base font-medium leading-none"
