@@ -1,6 +1,14 @@
 import { usePathname } from "next/navigation";
 
-import { Bell, Briefcase, Home, Settings, User } from "lucide-react";
+import {
+  Bell,
+  Briefcase,
+  FileText,
+  Folder,
+  Home,
+  Settings,
+  User,
+} from "lucide-react";
 
 export const NavItems = () => {
   const pathname = usePathname();
@@ -18,9 +26,16 @@ export const NavItems = () => {
       position: "top",
     },
     {
-      name: "Action",
+      name: "Folder",
+      href: "/lec/folder/view",
+      icon: <Folder size={26} />,
+      active: isNavItemActive(pathname, "/lec/folder/view"),
+      position: "top",
+    },
+    {
+      name: "Test",
       href: "/lec/test/view",
-      icon: <User size={26} />,
+      icon: <FileText size={26} />,
       active: isNavItemActive(pathname, "/lec/test/view"),
       position: "top",
     },

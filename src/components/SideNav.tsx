@@ -1,9 +1,7 @@
 "use client";
 
 import { Fragment, useEffect, useState } from "react";
-
 import Link from "next/link";
-
 import {
   Tooltip,
   TooltipContent,
@@ -14,23 +12,24 @@ import { NavItems } from "@/components/NavItem";
 import { cn } from "@/lib/utils";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
+import { Button } from "./ui/button";
 
 export default function SideNav() {
   const navItems = NavItems();
 
-  const [isSidebarExpanded, setIsSidebarExpanded] = useState(() => {
-    if (typeof window !== "undefined") {
-      const saved = window.localStorage.getItem("sidebarExpanded");
-      if (saved === null) {
-        return true;
-      }
-      return JSON.parse(saved);
-    }
-    return true; // default state if window is not defined
-  });
+  const [isSidebarExpanded, setIsSidebarExpanded] = useState<boolean | null>(
+    null
+  );
 
   useEffect(() => {
     if (typeof window !== "undefined") {
+      const saved = window.localStorage.getItem("sidebarExpanded");
+      setIsSidebarExpanded(saved === null ? true : JSON.parse(saved));
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isSidebarExpanded !== null) {
       window.localStorage.setItem(
         "sidebarExpanded",
         JSON.stringify(isSidebarExpanded)
@@ -39,8 +38,13 @@ export default function SideNav() {
   }, [isSidebarExpanded]);
 
   const toggleSidebar = () => {
-    setIsSidebarExpanded(!isSidebarExpanded);
+    setIsSidebarExpanded((prev) => !prev);
   };
+
+  if (isSidebarExpanded === null) {
+    // Return null or a loading spinner until the client-side state is initialized
+    return null;
+  }
 
   return (
     <div className="pr-4">
@@ -96,7 +100,7 @@ export default function SideNav() {
           </div>
         </aside>
         <div className="mt-[calc(calc(90vh)-40px)] relative">
-          <button
+          <Button
             type="button"
             className="absolute bottom-32 right-[-12px] flex h-6 w-6 items-center justify-center border border-muted-foreground/20 rounded-full bg-accent shadow-md hover:shadow-lg transition-shadow duration-300 ease-in-out"
             onClick={toggleSidebar}
@@ -106,7 +110,7 @@ export default function SideNav() {
             ) : (
               <ChevronRight size={16} className="stroke-foreground" />
             )}
-          </button>
+          </Button>
         </div>
       </div>
     </div>
