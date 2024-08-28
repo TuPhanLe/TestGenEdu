@@ -24,7 +24,7 @@ import IconMenu from "../ui/iconmenu";
 import { DropdownMenuSeparator } from "@radix-ui/react-dropdown-menu";
 import { ResponsiveDialog } from "../forms/responsive-dialog";
 import { AddFolder } from "../forms/AddFolder";
-import DeleteForm from "../forms/DeleteFolder";
+import DeleteFolder from "../forms/DeleteFolder";
 import { Separator } from "../ui/separator";
 import { Folder, Test } from "@prisma/client";
 type Props = {
@@ -75,7 +75,7 @@ const FolderList = ({ folders, tests }: Props) => {
             title="Delete Folder"
             description="Are you sure you want to delete this person?"
           >
-            <DeleteForm cardId={folder.id} setIsOpen={setIsDeleteOpen} />
+            <DeleteFolder cardId={folder.id} setIsOpen={setIsDeleteOpen} />
           </ResponsiveDialog>
           <Card
             className="w-full p-6 flex items-center justify-between shadow-md relative hover:shadow-xl duration-200 transition-all"

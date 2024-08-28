@@ -3,7 +3,6 @@ import { getAuthSession } from "@/lib/nextauth";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import Behavior from "@/components/action/Behavior";
-import FolderList from "@/components/FolderList";
 
 export const metadata = {
   title: "TEST GEN EDU | DNU",

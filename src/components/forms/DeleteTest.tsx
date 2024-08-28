@@ -1,7 +1,4 @@
-"use client";
-
 import React, { Dispatch, SetStateAction } from "react";
-
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -12,12 +9,15 @@ import * as z from "zod";
 const formSchema = z.object({
   cardId: z.string(),
 });
-export default function DeleteFolder({
+
+export default function DeleteTest({
   cardId,
   setIsOpen,
+  onDeleteSuccess, // Callback function to notify parent about deletion
 }: {
   cardId: string;
   setIsOpen: Dispatch<SetStateAction<boolean>>;
+  onDeleteSuccess: () => void; // Callback function to notify parent about successful deletion
 }) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -26,13 +26,35 @@ export default function DeleteFolder({
     },
   });
 
+  const handleDelete = async () => {
+    try {
+      const response = await fetch("/api/test/delete", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ cardId }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete the test");
+      }
+
+      onDeleteSuccess(); // Notify parent about successful deletion
+      setIsOpen(false);
+    } catch (error) {
+      console.error("Failed to delete the test:", error);
+      // Optionally, you can show an error message here
+    }
+  };
+
   const isLoading = form.formState.isSubmitting;
 
   const onSubmit = async () => {
     try {
-      setIsOpen(false);
+      handleDelete();
     } catch (error) {
-      console.log(error);
+      console.error("Error in submission:", error);
     }
   };
 
@@ -40,7 +62,7 @@ export default function DeleteFolder({
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="space-y-6  sm:px-0 px-4"
+        className="space-y-6 sm:px-0 px-4"
       >
         <div className="w-full flex justify-center sm:space-x-6">
           <Button

@@ -3,8 +3,6 @@
 import React, { useEffect, useState } from "react";
 
 import FolderList from "@/components/list/FolderList";
-// import TestList from "@/components/TestList"; // Thêm component này nếu bạn chưa có
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 import { LucideLayoutDashboard, PlusCircleIcon } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -21,7 +19,6 @@ const fetchFoldersAndTests = async (): Promise<{
 }> => {
   const response = await axios.post("/api/folder");
   const data = response.data;
-  console.log(data);
   return {
     folders: data.folders,
     tests: data.tests,
@@ -52,7 +49,7 @@ const Behavior = (prop: Props) => {
 
       <div className="flex-1  h-full px-4 py-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          <Tabs defaultValue="Folder" className="h-full space-y-6">
+          <Tabs defaultValue="Test" className="h-full space-y-6">
             <div className="space-between flex items-center">
               <TabsList className="grid w-[50%] grid-cols-2 mr-4 ">
                 <TabsTrigger value="Folder" className="relative ">

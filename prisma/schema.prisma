@@ -113,7 +113,7 @@ model Question {
   paragraphId       String?
   options           Json? // for mcq question 
   percentageCorrect Float? // for open ended question 
-  questionType      TestType
+  questionType      TestType?
   userAnswer        String?
   isCorrect         Boolean?
   test              Test?      @relation(fields: [testId], references: [id], onDelete: Cascade)
@@ -121,4 +121,5 @@ model Question {
 
   @@index([testId], name: "testId")
   @@index([paragraphId], name: "paragraphId")
+   @@unique([question, paragraphId])
 }

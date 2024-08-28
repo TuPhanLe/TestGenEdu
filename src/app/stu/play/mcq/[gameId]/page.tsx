@@ -38,7 +38,6 @@ const MCQpage = async ({ params: { gameId } }: Props) => {
       },
     },
   });
-  console.log(test);
 
   if (!test || test.testType !== "mcq") {
     return redirect("/quiz");
