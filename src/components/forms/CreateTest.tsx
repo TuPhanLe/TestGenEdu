@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { useFieldArray, useForm, Controller } from "react-hook-form";
-import { quizCreationSchema } from "@/schemas/form/quiz";
+import { testSchema } from "@/schemas/form/quiz";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
@@ -25,9 +25,9 @@ import { Textarea } from "../ui/textarea";
 
 type Props = {};
 
-type Input = z.infer<typeof quizCreationSchema>;
+type Input = z.infer<typeof testSchema>;
 
-const QuizCreation = (props: Props) => {
+const CreateTest = (props: Props) => {
   const router = useRouter();
   const [showLoader, setShowLoader] = React.useState(false);
   const [finished, setFinished] = React.useState(false);
@@ -44,7 +44,7 @@ const QuizCreation = (props: Props) => {
   });
 
   const form = useForm<Input>({
-    resolver: zodResolver(quizCreationSchema),
+    resolver: zodResolver(testSchema),
     defaultValues: {
       topic: "Semester",
       type: "mcq",
@@ -400,4 +400,4 @@ const QuizCreation = (props: Props) => {
   );
 };
 
-export default QuizCreation;
+export default CreateTest;

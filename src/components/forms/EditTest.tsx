@@ -2,13 +2,13 @@
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { useFieldArray, useForm } from "react-hook-form";
-import { quizUpdateSchema } from "@/schemas/form/quiz";
+import { testSchema } from "@/schemas/form/test";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
-import { Trash, ChevronDown, ChevronUp } from "lucide-react";
+import { MoreVertical, SquarePen, Trash2 } from "lucide-react";
 import {
   Form,
   FormField,
@@ -24,7 +24,17 @@ import LoadingQuestion from "../LoadingQuestion";
 import { Textarea } from "../ui/textarea";
 import { Paragraph, Question, Test } from "@prisma/client";
 import cuid from "cuid";
-
+import { Separator } from "../ui/separator";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import IconMenu from "../ui/iconmenu";
+import FamilyPopoverMenu from "../ui/familypopovermenu";
+import DropdownCRUD from "../dropdownmenu/DropdownCRUD";
 type Props = {
   test: Test & {
     paragraphs: (Pick<Paragraph, "id" | "content"> & {
@@ -33,12 +43,14 @@ type Props = {
   };
 };
 
-type Input = z.infer<typeof quizUpdateSchema>;
+type Input = z.infer<typeof testSchema>;
 
 const EditTest = ({ test }: Props) => {
   const router = useRouter();
-  const [showLoader, setShowLoader] = React.useState(false);
-  const [finished, setFinished] = React.useState(false);
+  const [showLoader, setShowLoader] = useState(false);
+  const [finished, setFinished] = useState(false);
+  const [addQuestionBut, setAddQuestionBut] = useState<boolean>(false);
+
   const { mutate: updateTest } = useMutation({
     mutationFn: async ({ testId, topic, type, paragraphs }: Input) => {
       try {
@@ -57,7 +69,7 @@ const EditTest = ({ test }: Props) => {
   });
 
   const form = useForm<Input>({
-    resolver: zodResolver(quizUpdateSchema),
+    resolver: zodResolver(testSchema),
     defaultValues: {
       testId: test.id,
       topic: test.topic,
@@ -75,12 +87,13 @@ const EditTest = ({ test }: Props) => {
     },
   });
 
-  const { fields, append } = useFieldArray({
+  const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: "paragraphs",
   });
 
   const [expandedParagraphs, setExpandedParagraphs] = useState<string[]>([]);
+  const [expandedQuestions, setExpandedQuestions] = useState<string[]>([]);
 
   const toggleExpandParagraph = (paragraphId: string) => {
     setExpandedParagraphs((prev) =>
@@ -89,50 +102,71 @@ const EditTest = ({ test }: Props) => {
         : [...prev, paragraphId]
     );
   };
-
-  const handleAddQuestion = (paragraphIndex: number) => {
-    const currentQuestions = form.getValues(
-      `paragraphs.${paragraphIndex}.questions`
+  const toggleExpandQuestions = (questionId: string) => {
+    setExpandedQuestions((prev) =>
+      prev.includes(questionId)
+        ? prev.filter((id) => id !== questionId)
+        : [...prev, questionId]
     );
-    form.setValue(`paragraphs.${paragraphIndex}.questions`, [
+  };
+  const handleAddQuestion = (index: number) => {
+    const currentQuestions = form.getValues(`paragraphs.${index}.questions`);
+    form.setValue(`paragraphs.${index}.questions`, [
       ...currentQuestions,
-      {
-        questionId: cuid(),
-        question: "",
-        answer: "",
-        options: ["", "", ""],
-      },
+      { questionId: cuid(), question: "", answer: "", options: ["", "", ""] },
     ]);
+    setAddQuestionBut((prevState) => !prevState);
   };
 
-  const handleRemoveQuestion = (
-    paragraphIndex: number,
-    questionIndex: number
-  ) => {
+  const handleRemoveQuestion = (paraIndex: number, qIndex: number) => {
     const currentQuestions = form.getValues(
-      `paragraphs.${paragraphIndex}.questions`
+      `paragraphs.${paraIndex}.questions`
     );
     if (currentQuestions.length > 1) {
       form.setValue(
-        `paragraphs.${paragraphIndex}.questions`,
-        currentQuestions.filter((_, i) => i !== questionIndex)
+        `paragraphs.${paraIndex}.questions`,
+        currentQuestions.filter((_, i) => i !== qIndex)
       );
+      setAddQuestionBut((prevState) => !prevState);
     } else {
       alert("You must have at least 1 question");
     }
   };
+  const handleAddParagraph = () => {
+    const newParagraph = {
+      paragraphId: cuid(),
+      paragraph: "",
+      questions: [
+        {
+          questionId: cuid(),
+          question: "",
+          answer: "",
+          options: ["", "", ""],
+        },
+      ],
+    };
+    append(newParagraph);
+    setExpandedParagraphs((prev) => [...prev, newParagraph.paragraphId]);
+  };
+  const handleRemoveParagraph = (index: number) => {
+    if (fields.length > 1) {
+      remove(index); // Remove the paragraph at the given index
+      setExpandedParagraphs((prev) =>
+        prev.filter((id) => id !== fields[index].paragraphId)
+      );
+    } else {
+      alert("You must have at least 1 paragraph");
+    }
+  };
 
   const onSubmit = (data: Input) => {
-    console.log("Submitting data:", data); // Debugging line
     setShowLoader(true);
     updateTest(data, {
       onSuccess: ({ gameId }) => {
         setFinished(true);
-        // Optionally navigate to another page
-        // router.push(`/stu/play/mcq/${gameId}`);
       },
       onError: (error) => {
-        console.error("Submit error:", error); // Debugging line
+        console.error("Submit error:", error);
         setShowLoader(false);
       },
     });
@@ -143,110 +177,151 @@ const EditTest = ({ test }: Props) => {
   }
 
   return (
-    <div className="relative flex justify-center">
-      <div className="w-1/2">
-        <Card className="w-[1000px]">
-          <CardHeader>
-            <CardTitle className="text-3xl font-bold">
-              Edit your test!
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className="space-y-8"
-              >
-                <FormField
-                  control={form.control}
-                  name="topic"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Topic</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Enter a topic ..." {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+    <div className="relative flex justify-center ">
+      <div className="w-1/2 mt-2">
+        <div className="flex items-center justify-between">
+          <div className="space-y-1">
+            <h2 className="text-2xl font-semibold tracking-tight">
+              Edit Test!
+            </h2>
+            <p className="text-sm text-muted-foreground">Modify your test.</p>
+          </div>
+        </div>
+        <Separator className="my-4" />
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <FormField
+              control={form.control}
+              name="topic"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Topic</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter a topic ..." {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-                {fields.map((item, index) => (
-                  <Card key={item.paragraphId} className="mb-4">
-                    <CardHeader className="flex justify-between items-center">
-                      <CardTitle className="text-2xl font-bold">
-                        <Button
-                          type="button"
-                          onClick={() =>
-                            toggleExpandParagraph(item.paragraphId)
-                          }
-                          className="ml-auto"
-                          size="lg"
+            {fields.map((item, index) => (
+              <Card key={item.paragraphId} className="mb-4">
+                <CardHeader className="flex ">
+                  <CardTitle className="text-2xl font-bold flex justify-between items-center">
+                    {/* Clickable Part Text */}
+                    <span
+                      onClick={() => toggleExpandParagraph(item.paragraphId)}
+                      className="cursor-pointer"
+                    >
+                      Part {index + 1}
+                    </span>
+
+                    {/* Dropdown Menu */}
+                    <DropdownCRUD
+                      edit={() => toggleExpandParagraph(item.paragraphId)}
+                      delete={() => handleRemoveParagraph(index)}
+                    />
+                  </CardTitle>
+                </CardHeader>
+                {expandedParagraphs.includes(item.paragraphId) && (
+                  <CardContent>
+                    <FormField
+                      control={form.control}
+                      name={`paragraphs.${index}.paragraph`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Textarea
+                              className="w-full h-48"
+                              placeholder="Enter a paragraph ..."
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            Please provide a paragraph.
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    {form
+                      .getValues(`paragraphs.${index}.questions`)
+                      .map((question, qIndex) => (
+                        <Card
+                          key={question.questionId}
+                          className="mt-6 p-1 m-4"
                         >
-                          {expandedParagraphs.includes(item.paragraphId) ? (
-                            <ChevronUp size={16} />
-                          ) : (
-                            <ChevronDown size={16} />
-                          )}
-                          Paragraph {item.paragraphId}
-                        </Button>
-                      </CardTitle>
-                    </CardHeader>
-                    {expandedParagraphs.includes(item.paragraphId) && (
-                      <CardContent>
-                        <FormField
-                          control={form.control}
-                          name={`paragraphs.${index}.paragraph`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormControl>
-                                <Textarea
-                                  className="w-full h-48"
-                                  placeholder="Enter a paragraph ..."
-                                  {...field}
-                                />
-                              </FormControl>
-                              <FormDescription>
-                                Please provide a paragraph.
-                              </FormDescription>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        {form
-                          .getValues(`paragraphs.${index}.questions`)
-                          .map((question, qIndex) => (
-                            <Card
-                              key={question.questionId}
-                              className="mt-6 p-1 m-4"
-                            >
-                              <CardHeader>
-                                <CardTitle className="text-xl font-bold">
-                                  Question {question.questionId}
-                                </CardTitle>
-                                <Button
-                                  type="button"
+                          <CardHeader>
+                            <CardTitle className="text-xl font-bold">
+                              <div className="flex justify-between items-center cursor-pointer">
+                                <span
+                                  className="cursor-pointer"
                                   onClick={() =>
+                                    toggleExpandQuestions(question.questionId)
+                                  }
+                                >
+                                  Question {qIndex + 1}
+                                </span>
+                                <DropdownCRUD
+                                  edit={() =>
+                                    toggleExpandQuestions(question.questionId)
+                                  }
+                                  delete={() =>
                                     handleRemoveQuestion(index, qIndex)
                                   }
-                                  variant="outline"
-                                  size="sm"
-                                  className="ml-auto"
-                                >
-                                  <Trash size={16} />
-                                </Button>
-                              </CardHeader>
-                              <CardContent>
+                                />
+                              </div>
+                            </CardTitle>
+                          </CardHeader>
+                          {expandedQuestions.includes(question.questionId) && (
+                            <CardContent>
+                              <FormField
+                                control={form.control}
+                                name={`paragraphs.${index}.questions.${qIndex}.question`}
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Question</FormLabel>
+                                    <FormControl>
+                                      <Input
+                                        placeholder="Enter question ..."
+                                        {...field}
+                                      />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                              <FormField
+                                control={form.control}
+                                name={`paragraphs.${index}.questions.${qIndex}.answer`}
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Answer</FormLabel>
+                                    <FormControl>
+                                      <Input
+                                        placeholder="Enter the answer ..."
+                                        {...field}
+                                      />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                              {question.options.map((option, optIndex) => (
                                 <FormField
+                                  key={optIndex}
                                   control={form.control}
-                                  name={`paragraphs.${index}.questions.${qIndex}.question`}
+                                  name={`paragraphs.${index}.questions.${qIndex}.options.${optIndex}`}
                                   render={({ field }) => (
                                     <FormItem>
-                                      <FormLabel>Question</FormLabel>
+                                      <FormLabel>
+                                        Option {optIndex + 1}
+                                      </FormLabel>
                                       <FormControl>
                                         <Input
-                                          placeholder="Enter question ..."
+                                          placeholder={`Option ${
+                                            optIndex + 1
+                                          } ...`}
                                           {...field}
                                         />
                                       </FormControl>
@@ -254,45 +329,8 @@ const EditTest = ({ test }: Props) => {
                                     </FormItem>
                                   )}
                                 />
-                                <FormField
-                                  control={form.control}
-                                  name={`paragraphs.${index}.questions.${qIndex}.answer`}
-                                  render={({ field }) => (
-                                    <FormItem>
-                                      <FormLabel>Answer</FormLabel>
-                                      <FormControl>
-                                        <Input
-                                          placeholder="Enter the answer ..."
-                                          {...field}
-                                        />
-                                      </FormControl>
-                                      <FormMessage />
-                                    </FormItem>
-                                  )}
-                                />
-                                {question.options.map((option, optIndex) => (
-                                  <FormField
-                                    key={optIndex}
-                                    control={form.control}
-                                    name={`paragraphs.${index}.questions.${qIndex}.options.${optIndex}`}
-                                    render={({ field }) => (
-                                      <FormItem>
-                                        <FormLabel>
-                                          Option {optIndex + 1}
-                                        </FormLabel>
-                                        <FormControl>
-                                          <Input
-                                            placeholder={`Option ${
-                                              optIndex + 1
-                                            } ...`}
-                                            {...field}
-                                          />
-                                        </FormControl>
-                                        <FormMessage />
-                                      </FormItem>
-                                    )}
-                                  />
-                                ))}
+                              ))}
+                              <div className="flex justify-end">
                                 <Button
                                   type="button"
                                   onClick={() =>
@@ -307,44 +345,35 @@ const EditTest = ({ test }: Props) => {
                                 >
                                   Add Option
                                 </Button>
-                              </CardContent>
-                            </Card>
-                          ))}
-                        <Button
-                          type="button"
-                          onClick={() => handleAddQuestion(index)}
-                          variant="outline"
-                          className="mt-4"
-                        >
-                          Add Question
-                        </Button>
-                      </CardContent>
-                    )}
-                  </Card>
-                ))}
+                              </div>
+                            </CardContent>
+                          )}
+                        </Card>
+                      ))}
+                    <div className="flex justify-end">
+                      <Button
+                        type="button"
+                        onClick={() => handleAddQuestion(index)}
+                        variant="outline"
+                        size="sm"
+                      >
+                        {" "}
+                        Add Question{" "}
+                      </Button>{" "}
+                    </div>
+                  </CardContent>
+                )}{" "}
+              </Card>
+            ))}
 
-                <div className="flex justify-end gap-x-4">
-                  <Button
-                    type="button"
-                    onClick={() =>
-                      append({
-                        paragraph: "",
-                        questions: [],
-                        paragraphId: cuid(),
-                      })
-                    }
-                    variant="outline"
-                  >
-                    Add Paragraph
-                  </Button>
-                  <Button type="submit" className="bg-blue-500 text-white">
-                    Submit
-                  </Button>
-                </div>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
+            <Button type="submit" className="w-full">
+              Save Changes
+            </Button>
+          </form>
+        </Form>
+      </div>
+      <div className="fixed top-[20%] right-20 p-4">
+        <FamilyPopoverMenu add={handleAddParagraph} />
       </div>
     </div>
   );

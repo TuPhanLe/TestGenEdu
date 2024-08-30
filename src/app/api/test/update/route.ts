@@ -48,78 +48,41 @@ export const PUT = async (req: Request) => {
     // Cập nhật đoạn văn và câu hỏi
     await Promise.all(
       paragraphs.map(async (paragraph) => {
-        const existingParagraph = await prisma.paragraph.findFirst({
-          where: { content: paragraph.paragraph, testId: testId },
+        const existingParagraph = await prisma.paragraph.upsert({
+          where: { id: paragraph.paragraphId },
+          update: { content: paragraph.paragraph },
+          create: {
+            testId: testId,
+            content: paragraph.paragraph,
+          },
         });
 
-        if (existingParagraph) {
-          await prisma.paragraph.update({
-            where: { id: existingParagraph.id },
-            data: { content: paragraph.paragraph },
-          });
+        await Promise.all(
+          paragraph.questions.map(async (question) => {
+            question.options.push(question.answer);
+            const options = question.options.sort(() => Math.random() - 0.5);
 
-          // Cập nhật câu hỏi trong đoạn văn
-          await Promise.all(
-            paragraph.questions.map(async (question) => {
-              // Thêm câu trả lời vào danh sách tùy chọn
-              question.options.push(question.answer);
-              const options = question.options.sort(() => Math.random() - 0.5);
-
-              // Tìm câu hỏi hiện tại để cập nhật
-              const existingQuestion = await prisma.question.findFirst({
-                where: {
-                  question: question.question,
-                  paragraphId: existingParagraph.id,
-                },
-              });
-
-              await prisma.question.upsert({
-                where: {
-                  id: existingQuestion?.id || "-1", // Sử dụng một giá trị không hợp lệ khi không tìm thấy câu hỏi
-                },
-                update: {
-                  question: question.question,
-                  answer: question.answer,
-                  options: JSON.stringify(options),
-                  questionType: type,
-                },
-                create: {
-                  question: question.question,
-                  answer: question.answer,
-                  options: JSON.stringify(options),
-                  questionType: type,
-                  paragraphId: existingParagraph.id,
-                  testId: testId,
-                },
-              });
-            })
-          );
-        } else {
-          // Tạo đoạn văn mới nếu chưa có
-          const newParagraph = await prisma.paragraph.create({
-            data: {
-              testId: testId,
-              content: paragraph.paragraph,
-            },
-          });
-
-          // Tạo các câu hỏi mới cho đoạn văn mới
-          await prisma.question.createMany({
-            data: paragraph.questions.map((question) => {
-              // Thêm câu trả lời vào danh sách tùy chọn
-              question.options.push(question.answer);
-              const options = question.options.sort(() => Math.random() - 0.5);
-              return {
+            await prisma.question.upsert({
+              where: { id: question.questionId },
+              update: {
                 question: question.question,
                 answer: question.answer,
                 options: JSON.stringify(options),
                 questionType: type,
-                paragraphId: newParagraph.id,
+                paragraphId: existingParagraph.id,
                 testId: testId,
-              };
-            }),
-          });
-        }
+              },
+              create: {
+                question: question.question,
+                answer: question.answer,
+                options: JSON.stringify(options),
+                questionType: type,
+                paragraphId: existingParagraph.id,
+                testId: testId,
+              },
+            });
+          })
+        );
       })
     );
 
