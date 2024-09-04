@@ -1,3 +1,4 @@
+"use client";
 import React, { useState } from "react";
 import {
   DropdownMenu,
@@ -6,7 +7,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Card } from "../ui/card";
-import { Test } from "@prisma/client";
+import { Folder, Test } from "@prisma/client";
 import { Button } from "../ui/button";
 import IconMenu from "../ui/iconmenu";
 import { DropdownMenuSeparator } from "@radix-ui/react-dropdown-menu";
@@ -14,20 +15,25 @@ import { ResponsiveDialog } from "../forms/responsive-dialog";
 import { Separator } from "../ui/separator";
 import {
   Clock,
+  CopyCheck,
+  CopyCheckIcon,
   FolderCheckIcon,
   MoreVertical,
+  PlusCircleIcon,
   SquarePen,
   Trash2,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import DeleteTest from "../forms/DeleteTest";
+import DropdownCRUD from "../dropdownmenu/DropdownCRUD";
 
 type Props = {
   tests: Test[];
+  folder?: Folder; // Optional folder prop
 };
 
-const TestList = ({ tests }: Props) => {
+const TestList = ({ tests, folder }: Props) => {
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
   const [testList, setTestList] = useState<Test[]>(tests); // Local state for test list
@@ -58,15 +64,21 @@ const TestList = ({ tests }: Props) => {
     <div className="space-y-8">
       <div className="flex items-center justify-between ">
         <div className="space-y-1">
-          <h2 className="text-2xl font-semibold tracking-tight">Test</h2>
-          <p className="text-sm text-muted-foreground">Create tests.</p>
+          <h2 className="text-2xl font-semibold tracking-tight">
+            {folder?.name ?? "Test"}
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            {" "}
+            {folder?.description ?? "Create Test Folder"}.
+          </p>
         </div>
         <Button
           onClick={() => {
             router.push("/lec/test/create");
           }}
         >
-          Add Test
+          <PlusCircleIcon className="mr-2 h-4 w-4" />
+          Create a Test
         </Button>
       </div>
       <Separator className="my-4" />
@@ -89,7 +101,7 @@ const TestList = ({ tests }: Props) => {
           </ResponsiveDialog>
           <Card className="w-full p-6 flex items-center justify-between shadow-md relative hover:shadow-xl duration-200 transition-all">
             <div className="flex items-center">
-              <FolderCheckIcon className="mr-3" />
+              <CopyCheckIcon className="mr-3" />
               <div className="ml-4 space-y-1">
                 <Link
                   className="text-base font-medium leading-none"
@@ -107,44 +119,14 @@ const TestList = ({ tests }: Props) => {
                 </p>
               </div>
             </div>
-            <DropdownMenu modal={false}>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  className="flex h-8 w-8 p-0 data-[state=open]:bg-muted"
-                >
-                  <MoreVertical className="h-4 w-4" />
-                  <span className="sr-only">Open menu</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-[160px] z-50">
-                <DropdownMenuItem className="group flex w-full items-center justify-between text-left p-0 text-sm font-base text-neutral-500">
-                  <button
-                    onClick={() => {
-                      router.push(`/lec/test/edit/${test.id}`);
-                    }}
-                    className="w-full justify-start flex rounded-md p-2 transition-all duration-75 hover:bg-neutral-100"
-                  >
-                    <IconMenu
-                      text="Edit"
-                      icon={<SquarePen className="h-4 w-4" />}
-                    />
-                  </button>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem className="group flex w-full items-center justify-between text-left p-0 text-sm font-base text-neutral-500">
-                  <button
-                    onClick={() => handleOpenDeleteDialog(test.id)}
-                    className="w-full justify-start flex text-red-500 rounded-md p-2 transition-all duration-75 hover:bg-neutral-100"
-                  >
-                    <IconMenu
-                      text="Delete"
-                      icon={<Trash2 className="h-4 w-4" />}
-                    />
-                  </button>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <DropdownCRUD
+              edit={() => {
+                router.push(`/lec/test/edit/${test.id}`);
+              }}
+              delete={() => {
+                handleOpenDeleteDialog(test.id);
+              }}
+            />
           </Card>
         </React.Fragment>
       ))}

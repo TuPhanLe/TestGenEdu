@@ -4,6 +4,7 @@ import {
   HeartIcon,
   PlusCircledIcon,
   PlusIcon,
+  Share1Icon,
 } from "@radix-ui/react-icons";
 import { AnimatePresence, motion } from "framer-motion";
 
@@ -12,8 +13,12 @@ import { useMediaQuery } from "@/hooks/use-media-query";
 import useClickOutside from "@/hooks/useClickOutside";
 interface FamilyPopoverMenuProps {
   add: () => void; // Add the prop type definition
+  share: () => void; // Add the prop type definition
 }
-export default function FamilyPopoverMenu({ add }: FamilyPopoverMenuProps) {
+export default function FamilyPopoverMenu({
+  add,
+  share,
+}: FamilyPopoverMenuProps) {
   const refMenu = React.useRef<HTMLDivElement>(null);
   const [openMenu, setOpenMenu] = useState(false);
 
@@ -52,7 +57,8 @@ export default function FamilyPopoverMenu({ add }: FamilyPopoverMenuProps) {
       onClick: add,
     },
     {
-      icon: EnvelopeClosedIcon,
+      icon: Share1Icon,
+      onClick: share,
     },
     {
       icon: HeartIcon,

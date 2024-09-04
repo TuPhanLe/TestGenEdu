@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
-import { checkAnswerSchema } from "@/schemas/form/quiz";
+import { checkAnswerSchema } from "@/schemas/form/test";
 import { prisma } from "@/lib/db";
 export async function POST(req: Request, res: Response) {
   try {

@@ -19,7 +19,7 @@ export const POST = async (req: Request) => {
 
     const tests = await prisma.test.findMany({
       where: {
-        userId: session.user.id,
+        creatorId: session.user.id,
       },
     });
 

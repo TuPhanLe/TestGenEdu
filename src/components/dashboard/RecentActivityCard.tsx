@@ -19,7 +19,7 @@ const RecentActivityCard = async (props: Props) => {
   if (!session?.user) {
     return redirect("/");
   }
-  const games_count = await prisma.test.count({
+  const games_count = await prisma.testAccess.count({
     where: {
       userId: session.user.id,
     },

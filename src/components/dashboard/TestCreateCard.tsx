@@ -12,7 +12,7 @@ const TestCreateCard = (props: Props) => {
     <Card
       className="hover:cursor-pointer hover:opacity-75"
       onClick={() => {
-        router.push("/lec/test/view");
+        // router.push("/lec/test/view");
       }}
     >
       <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">

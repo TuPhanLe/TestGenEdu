@@ -8,7 +8,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
-import { MoreVertical, SquarePen, Trash2 } from "lucide-react";
 import {
   Form,
   FormField,
@@ -20,21 +19,16 @@ import {
 } from "../ui/form";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import LoadingQuestion from "../LoadingQuestion";
 import { Textarea } from "../ui/textarea";
 import { Paragraph, Question, Test } from "@prisma/client";
 import cuid from "cuid";
 import { Separator } from "../ui/separator";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import IconMenu from "../ui/iconmenu";
+
 import FamilyPopoverMenu from "../ui/familypopovermenu";
 import DropdownCRUD from "../dropdownmenu/DropdownCRUD";
+import { ResponsiveDialog } from "../forms/responsive-dialog";
+import { CopyClipboard } from "../ui/copy-clipboard";
+
 type Props = {
   test: Test & {
     paragraphs: (Pick<Paragraph, "id" | "content"> & {
@@ -47,9 +41,8 @@ type Input = z.infer<typeof testSchema>;
 
 const EditTest = ({ test }: Props) => {
   const router = useRouter();
-  const [showLoader, setShowLoader] = useState(false);
-  const [finished, setFinished] = useState(false);
   const [addQuestionBut, setAddQuestionBut] = useState<boolean>(false);
+  const [isShareLinkOpen, setIsShareLinkOpen] = useState(false);
 
   const { mutate: updateTest } = useMutation({
     mutationFn: async ({ testId, topic, type, paragraphs }: Input) => {
@@ -81,7 +74,9 @@ const EditTest = ({ test }: Props) => {
           questionId: q.id,
           question: q.question,
           answer: q.answer,
-          options: JSON.parse(q.options as string),
+          options: JSON.parse(q.options as string).filter(
+            (option: string) => option !== q.answer
+          ),
         })),
       })),
     },
@@ -160,21 +155,15 @@ const EditTest = ({ test }: Props) => {
   };
 
   const onSubmit = (data: Input) => {
-    setShowLoader(true);
     updateTest(data, {
       onSuccess: ({ gameId }) => {
-        setFinished(true);
+        setIsShareLinkOpen(true);
       },
       onError: (error) => {
         console.error("Submit error:", error);
-        setShowLoader(false);
       },
     });
   };
-
-  if (showLoader) {
-    return <LoadingQuestion finished={finished} />;
-  }
 
   return (
     <div className="relative flex justify-center ">
@@ -188,6 +177,14 @@ const EditTest = ({ test }: Props) => {
           </div>
         </div>
         <Separator className="my-4" />
+        <ResponsiveDialog
+          isOpen={isShareLinkOpen}
+          setIsOpen={setIsShareLinkOpen}
+          title="Share your test"
+        >
+          <h3>localhost:3000/stu/play/{test.id}</h3>
+          <CopyClipboard textToCopy={`localhost:3000/stu/play/${test.id}`} />
+        </ResponsiveDialog>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <FormField
@@ -373,7 +370,12 @@ const EditTest = ({ test }: Props) => {
         </Form>
       </div>
       <div className="fixed top-[20%] right-20 p-4">
-        <FamilyPopoverMenu add={handleAddParagraph} />
+        <FamilyPopoverMenu
+          add={handleAddParagraph}
+          share={() => {
+            setIsShareLinkOpen(true);
+          }}
+        />
       </div>
     </div>
   );

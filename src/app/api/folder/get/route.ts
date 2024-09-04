@@ -20,12 +20,12 @@ export const POST = async (req: Request) => {
     // Truy vấn các thư mục từ database dựa trên userId
     const folders = await prisma.folder.findMany({
       where: {
-        userId: session.user.id,
+        creatorId: session.user.id,
       },
     });
     const tests = await prisma.test.findMany({
       where: {
-        userId: session.user.id,
+        creatorId: session.user.id,
       },
     });
     // Kiểm tra xem người dùng có thư mục nào không

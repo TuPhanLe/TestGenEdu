@@ -1,8 +1,7 @@
 import { prisma } from "@/lib/db";
-import { Clock, CopyCheck, Edit2 } from "lucide-react";
+import { Clock, CopyCheck } from "lucide-react";
 import Link from "next/link";
 import React from "react";
-import MCQCounter from "./MCQCounter";
 
 type Props = {
   limit: number;
@@ -10,19 +9,26 @@ type Props = {
 };
 
 const HistoryComponent = async ({ limit, userId }: Props) => {
-  const tests = await prisma.test.findMany({
-    take: limit,
+  // Fetch the testAccess records for the user, limited by the provided limit
+  const testAccesses = await prisma.testAccess.findMany({
     where: {
-      userId,
+      userId: userId,
     },
-    orderBy: {
-      timeStarted: "desc",
+    select: {
+      test: {
+        select: {
+          id: true,
+          topic: true,
+          timeEnded: true,
+        },
+      },
     },
+    take: limit,
   });
 
   return (
     <div className="space-y-8">
-      {tests.map((test) => {
+      {testAccesses.map(({ test }) => {
         return (
           <div className="flex items-center justify-between" key={test.id}>
             <div className="flex items-center">

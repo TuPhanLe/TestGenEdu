@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { quizUpdateSchema } from "@/schemas/form/quiz";
+import { testSchema } from "@/schemas/form/test";
+
 import { ZodError } from "zod";
 import { getAuthSession } from "@/lib/nextauth";
 import { prisma } from "@/lib/db";
@@ -15,11 +16,11 @@ export const PUT = async (req: Request) => {
     }
 
     const body = await req.json();
-    const { testId, topic, type, paragraphs } = quizUpdateSchema.parse(body);
+    const { testId, topic, type, paragraphs } = testSchema.parse(body);
     console.log(body);
 
     const existingTest = await prisma.test.findUnique({
-      where: { id: testId, userId: session.user.id },
+      where: { id: testId, creatorId: session.user.id },
       include: {
         paragraphs: {
           include: {

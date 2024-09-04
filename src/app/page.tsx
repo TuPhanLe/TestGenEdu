@@ -1,4 +1,3 @@
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -20,7 +19,7 @@ export default async function Home() {
     return redirect("/lec/dashboard");
   }
   return (
-    <div className="absolute -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2">
+    <div className="fixed -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2">
       <Card className="w-[700px]">
         <CardHeader>
           <CardTitle className="text-3xl">WELCOME TO TEST GEN EDU 🔥</CardTitle>

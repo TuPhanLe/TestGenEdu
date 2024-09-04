@@ -6,7 +6,9 @@ import Navbar from "@/components/Navbar";
 import Providers from "@/components/Providers";
 import { Toaster } from "@/components/ui/toaster";
 import SideNav from "@/components/SideNav";
-import FamilyPopoverMenu from "@/components/ui/familypopovermenu";
+import { getAuthSession } from "@/lib/nextauth";
+import React from "react";
+
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -14,24 +16,23 @@ export const metadata: Metadata = {
   description: "Let's make tests",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const session = await getAuthSession();
+
   return (
     <html lang="en">
       <body className={cn(inter.className, "antialiased min-h-screen pt-14")}>
         <Providers>
-          <div className="flex">
-            <Navbar />
-            <SideNav />
-            <div className="w-full overflow-hidden">
-              <div className="sm:h-[calc(99vh-60px)]  ">
-                <div className="w-full flex justify-center mx-auto h-full overflow-auto relative">
-                  <div className="w-full md:max-w-8xl">{children}</div>
-                </div>
-              </div>
+          <Navbar />
+          {/* Conditionally render SideNav based on user's role */}
+          {session?.user?.role == "LECTURE" && <SideNav />}
+          <div className="w-full">
+            <div className="w-full flex justify-center mx-auto overflow-auto relative">
+              <div className="w-full md:max-w-8xl">{children}</div>
             </div>
           </div>
           <Toaster />

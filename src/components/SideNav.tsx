@@ -42,8 +42,7 @@ export default function SideNav() {
   };
 
   if (isSidebarExpanded === null) {
-    // Return null or a loading spinner until the client-side state is initialized
-    return null;
+    return null; // Show loading spinner or skeleton if needed
   }
 
   return (
@@ -51,7 +50,7 @@ export default function SideNav() {
       <div
         className={cn(
           isSidebarExpanded ? "w-[200px]" : "w-[68px]",
-          "border-r transition-all duration-300 ease-in-out transform hidden sm:flex h-full bg-accent"
+          "fixed top-[59px] left-0 h-[calc(100vh-59px)] border-r transition-all duration-300 ease-in-out transform hidden sm:flex  z-50" // Adjusted the sidebar height and position
         )}
       >
         <aside className="flex h-full flex-col w-full break-words px-4 overflow-x-hidden columns-1">

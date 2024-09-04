@@ -8,6 +8,38 @@ datasource db {
   relationMode = "prisma"
 }
 
+enum UserRole {
+  ADMIN
+  LECTURE
+  STUDENT
+}
+
+enum TestType {
+  mcq
+  open_ended
+  true_false
+  matching
+  fillup
+  rewrite
+}
+
+model User {
+  id              String       @id @default(cuid())
+  name            String?
+  email           String?      @unique
+  emailVerified   DateTime?
+  image           String?
+  role            UserRole     @default(STUDENT)
+  accounts        Account[]
+  sessions        Session[]
+  createdTests    Test[]       @relation("CreatedTests")
+  accessibleTests TestAccess[]
+  createdFolders  Folder[]     @relation("CreatedFolders")
+  TestResult      TestResult[]
+
+  @@index([role]) // Index for filtering users by role
+}
+
 model Account {
   id                String  @id @default(cuid())
   userId            String
@@ -37,89 +69,94 @@ model Session {
   @@index([userId], name: "userId")
 }
 
-enum UserRole {
-  ADMIN
-  LECTURE
-  STUDENT
-}
+model Folder {
+  id          String   @id @default(cuid())
+  creatorId   String
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  tests       Test[]
+  creator     User     @relation("CreatedFolders", fields: [creatorId], references: [id], onDelete: Cascade)
 
-model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime?
-  image         String?
-  role          UserRole  @default(STUDENT)
-  accounts      Account[]
-  sessions      Session[]
-  tests         Test[]
-  folders       Folder[]
-}
-
-enum TestType {
-  mcq
-  open_ended
-  true_false
-  matching
-  fillup
-  rewrite
+  @@index([creatorId], name: "creatorId")
 }
 
 model Test {
-  id          String       @id @default(cuid())
-  userId      String
-  folderId    String?
-  timeStarted DateTime
-  topic       String
-  timeEnded   DateTime?
-  createdAt   DateTime @default(now()) // Thời gian tạo, mặc định là thời gian hiện tại
-  paragraphs  Paragraph[]
-  questions   Question[]
-  testType    TestType
-  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  folder      Folder?      @relation(fields: [folderId], references: [id], onDelete: Cascade)
+  id           String       @id @default(cuid())
+  creatorId    String
+  folderId     String?
+  timeStarted  DateTime
+  topic        String
+  timeEnded    DateTime?
+  createdAt    DateTime     @default(now())
+  paragraphs   Paragraph[]
+  questions    Question[]
+  testType     TestType
+  creator      User         @relation("CreatedTests", fields: [creatorId], references: [id], onDelete: Cascade)
+  folder       Folder?      @relation(fields: [folderId], references: [id], onDelete: SetNull)
+  accessibleBy TestAccess[]
+  TestResult   TestResult[]
 
-  @@index([userId], name: "userId")
+  @@index([creatorId], name: "creatorId")
   @@index([folderId], name: "folderId")
 }
-model Folder {
-  id          String   @id @default(cuid())
-  userId      String
-  name        String
-  description String?
-  createdAt   DateTime @default(now()) // Thời gian tạo, mặc định là thời gian hiện tại
-  tests       Test[]
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([userId], name: "userId")
+model TestAccess {
+  id          String @id @default(cuid())
+  testId      String
+  userId      String
+  accessLevel String
+  test        Test   @relation(fields: [testId], references: [id], onDelete: Cascade)
+  user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([testId, userId])
+  @@index([testId]) // Manual index to optimize queries by testId
+  @@index([userId]) // Manual index to optimize queries by userId
 }
 
-
 model Paragraph {
-  id       String     @id @default(cuid())
-  testId   String
-  content  String     @db.Text
+  id        String     @id @default(cuid())
+  testId    String
+  content   String     @db.Text
   questions Question[]
-  test     Test       @relation(fields: [testId], references: [id], onDelete: Cascade)
+  test      Test       @relation(fields: [testId], references: [id], onDelete: Cascade)
 
   @@index([testId], name: "testId")
 }
 
 model Question {
-  id                String   @id @default(cuid())
+  id                String     @id @default(cuid())
   question          String
   answer            String
   testId            String?
   paragraphId       String?
-  options           Json? // for mcq question 
-  percentageCorrect Float? // for open ended question 
+  options           Json?
+  percentageCorrect Float?
   questionType      TestType?
   userAnswer        String?
   isCorrect         Boolean?
   test              Test?      @relation(fields: [testId], references: [id], onDelete: Cascade)
   paragraph         Paragraph? @relation(fields: [paragraphId], references: [id], onDelete: Cascade)
 
+  @@unique([question, paragraphId])
   @@index([testId], name: "testId")
   @@index([paragraphId], name: "paragraphId")
-   @@unique([question, paragraphId])
+}
+
+model TestResult {
+  id             String   @id @default(cuid())
+  testId         String
+  studentId      String
+  submittedAt    DateTime @default(now())
+  score          Float    @default(0.0)
+  totalScore     Float    @default(0.0)
+  passed         Boolean  @default(false)
+  studentAnswers Json     @db.Json
+  feedback       String?  @db.Text
+  test           Test     @relation(fields: [testId], references: [id], onDelete: Cascade)
+  student        User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([testId, studentId])
+  @@index([testId])
+  @@index([studentId])
 }

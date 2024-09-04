@@ -10,7 +10,7 @@ export const metadata = {
 
 interface Props {
   searchParams: {
-    topic?: string;
+    id: string;
   };
 }
 

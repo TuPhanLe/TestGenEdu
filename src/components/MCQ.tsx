@@ -13,7 +13,7 @@ import {
 import { Button, buttonVariants } from "./ui/button";
 import MCQCounter from "./MCQCounter";
 import { useMutation } from "@tanstack/react-query";
-import { checkAnswerSchema } from "@/schemas/form/quiz";
+import { checkAnswerSchema } from "@/schemas/form/test";
 import { z } from "zod";
 import axios from "axios";
 import { useToast } from "./ui/use-toast";
@@ -160,7 +160,7 @@ const MCQ = ({ game }: Props) => {
   }
 
   return (
-    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 md:w-[80vw] max-w-4xl w-[90vw]">
+    <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 md:w-[80vw] max-w-4xl w-[90vw]">
       <div className="flex flex-row justify-between ">
         <div className="flex flex-col">
           {/* topic */}

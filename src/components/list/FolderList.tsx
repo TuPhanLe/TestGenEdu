@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 
 import {
+  Clock,
   CopyCheck,
   FolderArchiveIcon,
   FolderCheckIcon,
@@ -23,18 +24,46 @@ import { Button } from "../ui/button";
 import IconMenu from "../ui/iconmenu";
 import { DropdownMenuSeparator } from "@radix-ui/react-dropdown-menu";
 import { ResponsiveDialog } from "../forms/responsive-dialog";
-import { AddFolder } from "../forms/AddFolder";
 import DeleteFolder from "../forms/DeleteFolder";
 import { Separator } from "../ui/separator";
 import { Folder, Test } from "@prisma/client";
+import cuid from "cuid";
+import { CreateFolder } from "../forms/CreateFolder";
+import DropdownCRUD from "../dropdownmenu/DropdownCRUD";
 type Props = {
   folders: Folder[];
   tests: Test[];
 };
 
 const FolderList = ({ folders, tests }: Props) => {
-  const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [folderList, setFolderList] = useState<Folder[]>(folders); // Local state for test list
+
+  const handleOpenDeleteDialog = (cardId: string) => {
+    setSelectedCardId(cardId);
+    setIsDeleteOpen(true);
+  };
+
+  const handleDeleteSuccess = () => {
+    if (selectedCardId) {
+      setFolderList((prevList) =>
+        prevList.filter((folder) => folder.id !== selectedCardId)
+      );
+      setSelectedCardId(null);
+    }
+  };
+  const handleCreateSuccess = (newFolder: Folder) => {
+    setFolderList((prevList) => [newFolder, ...prevList]);
+    setIsEditOpen(false); // Close the create folder dialog
+  };
+
+  const sortedFolders = [...folderList].sort((a, b) => {
+    const dateA = new Date(a.createdAt).getTime();
+    const dateB = new Date(b.createdAt).getTime();
+    return dateB - dateA;
+  });
 
   return (
     <div className="space-y-8">
@@ -51,87 +80,66 @@ const FolderList = ({ folders, tests }: Props) => {
           }}
         >
           <PlusCircleIcon className="mr-2 h-4 w-4" />
-          Add folder
+          Create a folder
         </Button>
       </div>
       <Separator className="my-4" />
-
-      {folders.map((folder) => (
+      <ResponsiveDialog
+        isOpen={isEditOpen}
+        setIsOpen={setIsEditOpen}
+        title="Folder"
+      >
+        <CreateFolder
+          onCreateSuccess={handleCreateSuccess} // Pass the updated function here
+          setIsOpen={setIsEditOpen}
+          tests={tests}
+        />
+      </ResponsiveDialog>
+      {sortedFolders.map((folder) => (
         <>
-          <ResponsiveDialog
-            isOpen={isEditOpen}
-            setIsOpen={setIsEditOpen}
-            title="Folder"
-          >
-            <AddFolder
-              cardId={folder.id}
-              setIsOpen={setIsEditOpen}
-              tests={tests}
-            />
-          </ResponsiveDialog>
           <ResponsiveDialog
             isOpen={isDeleteOpen}
             setIsOpen={setIsDeleteOpen}
             title="Delete Folder"
-            description="Are you sure you want to delete this person?"
+            description="Are you sure you want to delete this folder?"
           >
-            <DeleteFolder cardId={folder.id} setIsOpen={setIsDeleteOpen} />
+            <DeleteFolder
+              cardId={selectedCardId}
+              setIsOpen={setIsDeleteOpen}
+              onDeleteSuccess={handleDeleteSuccess}
+            />
           </ResponsiveDialog>
           <Card
             className="w-full p-6 flex items-center justify-between shadow-md relative hover:shadow-xl duration-200 transition-all"
             key={folder.id}
           >
             <div className="flex items-center">
-              <FolderCheckIcon className="mr-3" />
+              <FolderArchiveIcon className="mr-3" />
               <div className="ml-4 space-y-1">
                 <Link
                   className="text-base font-medium leading-none"
-                  href={`/statistics/${folder.id}`}
+                  href={`/lec/test/view/${folder.id}`}
                 >
                   {folder.name}
                 </Link>
+                <p className="flex items-center px-2 py-1 text-xs text-white rounded-lg w-fit bg-slate-800">
+                  <Clock className="w-4 h-4 mr-1" />
+                  {new Date(folder.createdAt ?? 0).toLocaleDateString()}{" "}
+                  {new Date(folder.createdAt ?? 0).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </p>
               </div>
             </div>
-            <DropdownMenu modal={false}>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  className="flex h-8 w-8 p-0 data-[state=open]:bg-muted"
-                >
-                  <MoreVertical className="h-4 w-4" />
-                  <span className="sr-only">Open menu</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-[160px] z-50">
-                <DropdownMenuItem className="group flex w-full items-center justify-between  text-left p-0 text-sm font-base text-neutral-500 ">
-                  <button
-                    onClick={() => {
-                      setIsEditOpen(true);
-                    }}
-                    className="w-full justify-start flex rounded-md p-2 transition-all duration-75 hover:bg-neutral-100"
-                  >
-                    <IconMenu
-                      text="Edit"
-                      icon={<SquarePen className="h-4 w-4" />}
-                    />
-                  </button>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem className="group flex w-full items-center justify-between  text-left p-0 text-sm font-base text-neutral-500 ">
-                  <button
-                    onClick={() => {
-                      setIsDeleteOpen(true);
-                    }}
-                    className="w-full justify-start flex text-red-500 rounded-md p-2 transition-all duration-75 hover:bg-neutral-100"
-                  >
-                    <IconMenu
-                      text="Delete"
-                      icon={<Trash2 className="h-4 w-4" />}
-                    />
-                  </button>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <DropdownCRUD
+              edit={() => {
+                setIsEditOpen(true);
+              }}
+              delete={() => {
+                handleOpenDeleteDialog(folder.id);
+              }}
+            />
           </Card>
         </>
       ))}

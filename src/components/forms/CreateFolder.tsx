@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Dispatch, SetStateAction, useState } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -20,31 +20,36 @@ import { folderSchema } from "@/schemas/form/folder";
 import { Checkbox } from "../ui/checkbox";
 import { ScrollArea } from "../ui/scroll-area";
 import { Separator } from "../ui/separator";
-import { Test } from "@prisma/client";
+import { Folder, Test } from "@prisma/client";
+import { useMutation } from "@tanstack/react-query";
+import axios from "axios";
 
 interface Selections {
   [key: string]: boolean;
 }
 
 type Props = {
-  cardId: string;
   setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
   tests: Test[];
+  onCreateSuccess: (newFolder: Folder) => void;
 };
 
-export const AddFolder: React.FC<Props> = ({ cardId, setIsOpen, tests }) => {
+export const CreateFolder: React.FC<Props> = ({
+  setIsOpen,
+  tests,
+  onCreateSuccess,
+}) => {
   type Input = z.infer<typeof folderSchema>;
 
   const form = useForm<z.infer<typeof folderSchema>>({
     resolver: zodResolver(folderSchema),
     defaultValues: {
-      name: "Default",
-      description: "Description",
-      selectedTest: [], // Ensure this is part of the default values
+      name: "HK232",
+      description: "Store semester information",
+      selectedTest: [],
     },
   });
 
-  // Generate options with test names and createdAt dates
   const options = tests.map((test) => ({
     id: test.id,
     label: `${test.topic} - ${new Date(
@@ -66,27 +71,33 @@ export const AddFolder: React.FC<Props> = ({ cardId, setIsOpen, tests }) => {
     }));
   };
 
-  const isLoading = form.formState.isSubmitting;
-
-  const onSubmit = async (values: z.infer<typeof folderSchema>) => {
-    try {
-      // Capture the selected tests
-      const selectedTest = Object.keys(selections).filter(
-        (optionId) => selections[optionId]
-      );
-
-      // Include selectedTest in the form values
-      const formData = {
-        ...values,
-        selectedTest,
-      };
-
-      console.log(formData); // Log the form data to verify
-
+  const { mutate: createFolder, isPending } = useMutation({
+    mutationFn: async (formData: Input) => {
+      const response = await axios.post("/api/folder/create", formData);
+      return response.data;
+    },
+    onSuccess: (data) => {
+      console.log("Folder created successfully:", data);
+      onCreateSuccess(data); // Pass the newly created folder data
       setIsOpen(false);
-    } catch (error) {
-      console.log(error);
-    }
+    },
+    onError: (error) => {
+      console.error("Error creating folder:", error);
+    },
+  });
+
+  const onSubmit = (values: Input) => {
+    const selectedTest = Object.keys(selections).filter(
+      (optionId) => selections[optionId]
+    );
+
+    const formData = {
+      ...values,
+      selectedTest,
+    };
+    console.log(formData);
+
+    createFolder(formData);
   };
 
   return (
@@ -158,11 +169,11 @@ export const AddFolder: React.FC<Props> = ({ cardId, setIsOpen, tests }) => {
         <div className="flex w-full sm:justify-end mt-4">
           <Button
             type="submit"
-            disabled={isLoading}
+            disabled={isPending}
             className="w-full sm:w-auto"
           >
             <>
-              {isLoading ? (
+              {isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Saving...
