@@ -45,12 +45,21 @@ const EditTest = ({ test }: Props) => {
   const [isShareLinkOpen, setIsShareLinkOpen] = useState(false);
 
   const { mutate: updateTest } = useMutation({
-    mutationFn: async ({ testId, topic, type, paragraphs }: Input) => {
+    mutationFn: async ({
+      testId,
+      topic,
+      type,
+      testDuration,
+      attemptsAllowed,
+      paragraphs,
+    }: Input) => {
       try {
         const response = await axios.put("/api/test/update", {
           testId,
           topic,
           type,
+          testDuration,
+          attemptsAllowed,
           paragraphs,
         });
         return response.data;
@@ -64,9 +73,11 @@ const EditTest = ({ test }: Props) => {
   const form = useForm<Input>({
     resolver: zodResolver(testSchema),
     defaultValues: {
+      testDuration: test.testDuration ?? 0,
       testId: test.id,
       topic: test.topic,
       type: test.testType,
+      attemptsAllowed: test.attemptsAllowed || 1,
       paragraphs: test.paragraphs.map((p) => ({
         paragraph: p.content,
         paragraphId: p.id,
@@ -200,7 +211,40 @@ const EditTest = ({ test }: Props) => {
                 </FormItem>
               )}
             />
-
+            <FormField
+              control={form.control}
+              name="testDuration"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Test Duration (minutes)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      placeholder="Enter duration ..."
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="attemptsAllowed"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Attempt Allowed (time)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      placeholder="Enter the number of attempts ..."
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             {fields.map((item, index) => (
               <Card key={item.paragraphId} className="mb-4">
                 <CardHeader className="flex ">

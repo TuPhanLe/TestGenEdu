@@ -16,7 +16,8 @@ export const PUT = async (req: Request) => {
     }
 
     const body = await req.json();
-    const { testId, topic, type, paragraphs } = testSchema.parse(body);
+    const { testId, topic, type, testDuration, attemptsAllowed, paragraphs } =
+      testSchema.parse(body);
     console.log(body);
 
     const existingTest = await prisma.test.findUnique({
@@ -43,7 +44,7 @@ export const PUT = async (req: Request) => {
     // Cập nhật thông tin bài kiểm tra
     const updatedTest = await prisma.test.update({
       where: { id: testId },
-      data: { topic, testType: type },
+      data: { topic, testType: type, testDuration, attemptsAllowed },
     });
 
     // Cập nhật đoạn văn và câu hỏi

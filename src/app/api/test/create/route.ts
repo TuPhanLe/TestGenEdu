@@ -17,7 +17,8 @@ export const POST = async (req: Request) => {
 
     // Parse and validate the request body
     const body = await req.json();
-    const { testId, topic, type, paragraphs } = testSchema.parse(body);
+    const { testId, topic, testDuration, attemptsAllowed, type, paragraphs } =
+      testSchema.parse(body);
     console.log(body);
 
     // Upsert the test in the database
@@ -25,16 +26,18 @@ export const POST = async (req: Request) => {
       where: { id: testId }, // Check if a test with this ID exists
       update: {
         testType: type,
-        timeStarted: new Date(),
         creatorId: session.user.id,
         topic,
+        testDuration,
+        attemptsAllowed,
       },
       create: {
         id: testId,
         testType: type,
-        timeStarted: new Date(),
         creatorId: session.user.id,
         topic,
+        testDuration,
+        attemptsAllowed,
       },
     });
 

@@ -9,47 +9,57 @@ type Props = {
 };
 
 const HistoryComponent = async ({ limit, userId }: Props) => {
-  // Fetch the testAccess records for the user, limited by the provided limit
-  const testAccesses = await prisma.testAccess.findMany({
+  // Fetch the testResult records for the user, including attemptNumber and sorted by endTime in descending order
+  const testResults = await prisma.testResult.findMany({
     where: {
-      userId: userId,
+      studentId: userId,
     },
     select: {
       test: {
         select: {
           id: true,
           topic: true,
-          timeEnded: true,
         },
       },
+      endTime: true, // Fetch the end time of the test
+      attemptNumber: true, // Fetch the attempt number
     },
-    take: limit,
+    orderBy: {
+      endTime: "desc", // Sort by endTime in descending order (most recent first)
+    },
+    take: limit, // Limit the number of results
   });
 
   return (
     <div className="space-y-8">
-      {testAccesses.map(({ test }) => {
-        return (
+      {testResults.map(({ test, endTime, attemptNumber }) =>
+        test ? (
           <div className="flex items-center justify-between" key={test.id}>
             <div className="flex items-center">
               <CopyCheck className="mr-3" />
               <div className="ml-4 space-y-1">
                 <Link
                   className="text-base font-medium leading-none underline"
-                  href={`/statistics/${test.id}`}
+                  href={`/stu/statistics/${test.id}/${attemptNumber}`}
                 >
                   {test.topic}
                 </Link>
                 <p className="flex items-center px-2 py-1 text-xs text-white rounded-lg w-fit bg-slate-800">
                   <Clock className="w-4 h-4 mr-1" />
-                  {new Date(test.timeEnded ?? 0).toLocaleDateString()}
+                  {/* Format the endTime to include date, hour, and minute */}
+                  {new Date(endTime ?? 0).toLocaleDateString()} -{" "}
+                  {new Date(endTime ?? 0).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
                 </p>
-                <p className="text-sm text-muted-foreground"></p>
               </div>
             </div>
           </div>
-        );
-      })}
+        ) : (
+          <p key={Math.random()}>Test data not available</p>
+        )
+      )}
     </div>
   );
 };

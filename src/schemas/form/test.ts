@@ -17,12 +17,11 @@ const paragraphSchema = z.object({
   paragraphId: z.string(),
   paragraph: z
     .string()
-    .min(4, { message: "Paragraph must be at least 4 charaters long" }),
+    .min(4, { message: "Paragraph must be at least 4 characters long" }),
   questions: z.array(questionSchema),
 });
 
-// Define the main schema
-
+// Define the main schema with testDuration
 export const checkAnswerSchema = z.object({
   questionId: z.string(),
   userInput: z.string(),
@@ -42,6 +41,7 @@ export const testSchema = z.object({
     "fillup",
     "rewrite",
   ]),
-
+  testDuration: z.coerce.number().int().positive(), // Duration of the test in minutes
+  attemptsAllowed: z.coerce.number().int().positive(),
   paragraphs: z.array(paragraphSchema),
 });

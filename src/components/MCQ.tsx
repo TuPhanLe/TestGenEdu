@@ -21,6 +21,8 @@ import Link from "next/link";
 import { cn, formatTimeDelta } from "@/lib/utils";
 
 type Props = {
+  attemptNumber: number;
+  timeStarted: Date;
   game: Test & {
     paragraphs: (Pick<Paragraph, "id" | "content"> & {
       questions: Pick<Question, "id" | "question" | "options">[];
@@ -28,7 +30,7 @@ type Props = {
   };
 };
 
-const MCQ = ({ game }: Props) => {
+const MCQ = ({ attemptNumber, timeStarted, game }: Props) => {
   const [paragraphIndex, setParagraphIndex] = React.useState(0);
   const [questionIndex, setQuestionIndex] = React.useState(0);
   const [selectedChoice, setSelectedChoice] = React.useState<number>(0);
@@ -38,19 +40,37 @@ const MCQ = ({ game }: Props) => {
   const [now, setNow] = React.useState<Date>(new Date());
   const { toast } = useToast();
   const [isMounted, setIsMounted] = React.useState(false);
+  const hasFinishedRef = React.useRef(false);
+  const endTime = React.useMemo(() => {
+    if (!timeStarted || !game.testDuration) return null;
+    return new Date(timeStarted.getTime() + game.testDuration * 60 * 1000); // Multiply by 1000 to convert minutes to milliseconds
+  }, [timeStarted, game.testDuration]);
+
+  const remainingTime = React.useMemo(() => {
+    if (!endTime) return 0;
+    return Math.max(0, differenceInSeconds(endTime, now)); // Use `now`
+  }, [endTime, now]);
+
+  const elapsedTime = React.useMemo(() => {
+    return differenceInSeconds(now, timeStarted); // Time since start
+  }, [now, timeStarted]);
 
   React.useEffect(() => {
     setIsMounted(true);
-  }, []);
-
-  React.useEffect(() => {
     const interval = setInterval(() => {
       if (!hasEnded) {
-        setNow(new Date());
+        setNow(new Date()); // Update `now` each second
       }
     }, 1000);
+
     return () => clearInterval(interval);
   }, [hasEnded]);
+
+  React.useEffect(() => {
+    if (remainingTime <= 0 && !hasEnded) {
+      setHasEnded(true); // End the timer if remaining time is 0 or less
+    }
+  }, [remainingTime, hasEnded]);
 
   const currentParagraph = React.useMemo(
     () => game.paragraphs[paragraphIndex],
@@ -71,7 +91,42 @@ const MCQ = ({ game }: Props) => {
       return response.data;
     },
   });
+  const { mutate: updateTestResult, isPending: isUpdating } = useMutation({
+    mutationFn: async () => {
+      const payload = {
+        testId: game.id,
+        startTime: timeStarted.toISOString(),
+        endTime: now.toISOString(),
+      };
+      const response = await axios.post("/api/result/finish", payload);
+      return response.data;
+    },
+    onSuccess: () => {
+      toast({
+        title: "Results Updated!",
+        description: "Your test results have been successfully updated.",
+        variant: "success",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error!",
+        description: "There was an error updating the results.",
+        variant: "destructive",
+      });
+    },
+  });
+  const handleFinish = React.useCallback(() => {
+    if (isUpdating) return;
+    updateTestResult();
+  }, [updateTestResult, isUpdating]);
 
+  React.useEffect(() => {
+    if (hasEnded && !hasFinishedRef.current) {
+      handleFinish(); // Gọi `handleFinish` khi bài thi kết thúc
+      hasFinishedRef.current = true; // Đánh dấu là đã hoàn thành
+    }
+  }, [hasEnded, handleFinish]);
   const handleNext = React.useCallback(() => {
     if (isChecking) return;
     checkAnswer(undefined, {
@@ -142,14 +197,17 @@ const MCQ = ({ game }: Props) => {
 
   if (hasEnded) {
     return (
-      <div className="absolute flex flex-col justify-center top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 ">
+      <div className="fixed flex flex-col justify-center top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 ">
         <div className="px-4 mt-2 font-semibold text-white bg-green-500 whitespace-nowrap">
           You completed in{" "}
-          {isMounted &&
-            formatTimeDelta(differenceInSeconds(now, game.timeStarted))}
+          {isMounted && (
+            <>
+              <div>{formatTimeDelta(elapsedTime)} </div>
+            </>
+          )}
         </div>
         <Link
-          href={`/stu/statistics/${game.id}`}
+          href={`/stu/statistics/${game.id}/${attemptNumber}`}
           className={cn(buttonVariants(), "mt-2")}
         >
           View Statistics
@@ -172,8 +230,7 @@ const MCQ = ({ game }: Props) => {
           </p>
           <div className="flex self-start mt-3 text-slate-400">
             <Timer className="mr-2" />
-            {isMounted &&
-              formatTimeDelta(differenceInSeconds(now, game.timeStarted))}
+            {isMounted && formatTimeDelta(remainingTime)}
           </div>
         </div>
         <MCQCounter

@@ -39,12 +39,21 @@ const CreateTest = (props: Props) => {
   const [isShareLinkOpen, setIsShareLinkOpen] = useState(false);
 
   const { mutate: createTest } = useMutation({
-    mutationFn: async ({ testId, topic, type, paragraphs }: Input) => {
+    mutationFn: async ({
+      testId,
+      topic,
+      testDuration,
+      type,
+      attemptsAllowed,
+      paragraphs,
+    }: Input) => {
       try {
         const response = await axios.post("/api/test/create", {
           testId,
           topic,
+          testDuration,
           type,
+          attemptsAllowed,
           paragraphs,
         });
         return response.data;
@@ -61,6 +70,8 @@ const CreateTest = (props: Props) => {
       testId: cuid(),
       topic: "Semester",
       type: "mcq",
+      testDuration: 60, // Default duration in minutes
+      attemptsAllowed: 1,
       paragraphs: [
         {
           paragraphId: cuid(),
@@ -217,7 +228,40 @@ const CreateTest = (props: Props) => {
                 </FormItem>
               )}
             />
-
+            <FormField
+              control={form.control}
+              name="testDuration"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Test Duration (minutes)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      placeholder="Enter duration ..."
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="attemptsAllowed"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Attempt Allowed (time)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      placeholder="Enter the number of attempts ..."
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             {fields.map((item, index) => (
               <Card key={item.paragraphId} className="mb-4">
                 <CardHeader className="flex ">

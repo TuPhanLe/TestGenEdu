@@ -15,8 +15,8 @@ const MCQpage = async ({ params: { testId } }: Props) => {
   if (!session) {
     redirect("/");
   }
-  console.log(testId);
 
+  // Fetch the test details with attemptsAllowed, paragraphs, and questions
   const test = await prisma.test.findUnique({
     where: {
       id: testId,
@@ -37,11 +37,12 @@ const MCQpage = async ({ params: { testId } }: Props) => {
       },
     },
   });
-  console.log(test);
 
   if (!test || test.testType !== "mcq") {
     return redirect("/quiz");
   }
+
+  const attemptsAllowed = test.attemptsAllowed ?? 1;
 
   // Check if the TestAccess already exists for the user
   const existingAccess = await prisma.testAccess.findUnique({
@@ -59,12 +60,51 @@ const MCQpage = async ({ params: { testId } }: Props) => {
       data: {
         testId: test.id,
         userId: session.user.id,
-        accessLevel: "play", // You can adjust this based on your access level logic
+        accessLevel: "play", // Adjust access level as needed
       },
     });
   }
 
-  return <MCQ game={test} />;
+  const existingResults = await prisma.testResult.findMany({
+    where: {
+      testId: testId,
+      studentId: session.user.id,
+    },
+    orderBy: {
+      attemptNumber: "desc", // Get the latest attempt
+    },
+  });
+  const nextAttemptNumber =
+    existingResults.length > 0 ? existingResults[0].attemptNumber + 1 : 0;
+  // Check if the user has exceeded the allowed attempts
+  if (nextAttemptNumber >= attemptsAllowed) {
+    return (
+      <div>
+        <h2>
+          Error: You have reached the maximum number of attempts for this test.
+        </h2>
+      </div>
+    );
+  }
+  // If the TestResult doesn't exist, create a new one with the first attempt
+  await prisma.testResult.create({
+    data: {
+      testId: testId,
+      studentId: session.user.id,
+      studentAnswers: [], // Initialize studentAnswers as an empty array
+      startTime: new Date(),
+      totalScore: 10, // Assuming total score is 10
+      attemptNumber: nextAttemptNumber,
+    },
+  });
+
+  return (
+    <MCQ
+      game={test}
+      timeStarted={new Date()}
+      attemptNumber={nextAttemptNumber}
+    />
+  );
 };
 
 export default MCQpage;

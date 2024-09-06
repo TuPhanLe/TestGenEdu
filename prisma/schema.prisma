@@ -13,7 +13,11 @@ enum UserRole {
   LECTURE
   STUDENT
 }
-
+enum LabelQuestion {
+  EASY
+  MEDIUM 
+  HARD 
+}
 enum TestType {
   mcq
   open_ended
@@ -30,6 +34,9 @@ model User {
   emailVerified   DateTime?
   image           String?
   role            UserRole     @default(STUDENT)
+  studentId       String?      // Student ID (optional, relevant if the role is STUDENT)
+  class           String?      // Class (optional, relevant if the role is STUDENT)
+  department      String?      // Department (optional, relevant if the role is STUDENT)
   accounts        Account[]
   sessions        Session[]
   createdTests    Test[]       @relation("CreatedTests")
@@ -39,6 +46,7 @@ model User {
 
   @@index([role]) // Index for filtering users by role
 }
+
 
 model Account {
   id                String  @id @default(cuid())
@@ -82,24 +90,27 @@ model Folder {
 }
 
 model Test {
-  id           String       @id @default(cuid())
-  creatorId    String
-  folderId     String?
-  timeStarted  DateTime
-  topic        String
-  timeEnded    DateTime?
-  createdAt    DateTime     @default(now())
-  paragraphs   Paragraph[]
-  questions    Question[]
-  testType     TestType
-  creator      User         @relation("CreatedTests", fields: [creatorId], references: [id], onDelete: Cascade)
-  folder       Folder?      @relation(fields: [folderId], references: [id], onDelete: SetNull)
-  accessibleBy TestAccess[]
-  TestResult   TestResult[]
+  id              String      @id @default(cuid())
+  creatorId       String
+  folderId        String?
+  timeStarted     DateTime?
+  topic           String
+  timeEnded       DateTime?
+  createdAt       DateTime    @default(now())
+  paragraphs      Paragraph[]
+  questions       Question[]
+  testType        TestType
+  creator         User        @relation("CreatedTests", fields: [creatorId], references: [id], onDelete: Cascade)
+  folder          Folder?     @relation(fields: [folderId], references: [id], onDelete: SetNull)
+  accessibleBy    TestAccess[]
+  testDuration    Int?        @default(60)// Duration of the test in minutes
+  attemptsAllowed Int?        @default(1)// Number of allowed attempts (new field)
+  TestResult      TestResult[]
 
   @@index([creatorId], name: "creatorId")
   @@index([folderId], name: "folderId")
 }
+
 
 model TestAccess {
   id          String @id @default(cuid())
@@ -153,10 +164,13 @@ model TestResult {
   passed         Boolean  @default(false)
   studentAnswers Json     @db.Json
   feedback       String?  @db.Text
+  startTime      DateTime // Start time of the test
+  endTime        DateTime? // End time of the test
   test           Test     @relation(fields: [testId], references: [id], onDelete: Cascade)
   student        User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  attemptNumber  Int       @default(0) // New field: number of attempts made by the student
 
-  @@unique([testId, studentId])
+  @@unique([testId, studentId, attemptNumber]) // Updated unique constraint to track attempts
   @@index([testId])
   @@index([studentId])
 }
