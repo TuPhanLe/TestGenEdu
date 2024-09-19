@@ -18,6 +18,9 @@ export default async function Home() {
   if (session?.user.role === UserRole.LECTURE) {
     return redirect("/lec/dashboard");
   }
+  if (session?.user.role === UserRole.ADMIN) {
+    return redirect("/admin/dashboard");
+  }
   return (
     <div className="fixed -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2">
       <Card className="w-[700px]">

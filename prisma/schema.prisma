@@ -7,7 +7,34 @@ datasource db {
   url          = env("DATABASE_URL")
   relationMode = "prisma"
 }
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  userId       String
+  expires      DateTime
+  sessionToken String   @unique
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId], name: "userId")
+}
 enum UserRole {
   ADMIN
   LECTURE
@@ -43,38 +70,32 @@ model User {
   accessibleTests TestAccess[]
   createdFolders  Folder[]     @relation("CreatedFolders")
   TestResult      TestResult[]
-
+  supervisedClasses Class[]   @relation("SupervisedClasses") // Các lớp mà giáo viên phụ trách
+  classes         UserClass[] // Các lớp mà user (sinh viên hoặc giáo viên) tham gia
   @@index([role]) // Index for filtering users by role
 }
 
 
-model Account {
-  id                String  @id @default(cuid())
-  userId            String
-  type              String
-  provider          String
-  providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
-  expires_at        Int?
-  token_type        String?
-  scope             String?
-  id_token          String? @db.Text
-  session_state     String?
-  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+model Class {
+  id            String   @id @default(cuid())
+  name          String   // Tên lớp
+  supervisorId  String?  // ID giáo viên phụ trách (có thể null nếu chưa có giáo viên)
+  supervisor    User?    @relation("SupervisedClasses", fields: [supervisorId], references: [id])
+  students      UserClass[] // Mối quan hệ nhiều-nhiều qua bảng UserClass
+  studentCount  Int      @default(0) // Số lượng sinh viên
 
-  @@unique([provider, providerAccountId])
-  @@index([userId])
+  @@index([supervisorId]) // Thêm chỉ mục vào supervisorId
 }
+model UserClass {
+  id        String @id @default(cuid())
+  userId    String
+  classId   String
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  class     Class  @relation(fields: [classId], references: [id], onDelete: Cascade)
 
-model Session {
-  id           String   @id @default(cuid())
-  userId       String
-  expires      DateTime
-  sessionToken String   @unique
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId], name: "userId")
+  @@unique([userId, classId]) // Đảm bảo không có trùng lặp
+  @@index([userId])  // Thêm chỉ mục vào userId
+  @@index([classId]) // Thêm chỉ mục vào classId
 }
 
 model Folder {

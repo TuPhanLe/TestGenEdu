@@ -1,28 +1,11 @@
 "use client";
 import React, { useState } from "react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Card } from "../ui/card";
 import { Folder, Test } from "@prisma/client";
 import { Button } from "../ui/button";
-import IconMenu from "../ui/iconmenu";
-import { DropdownMenuSeparator } from "@radix-ui/react-dropdown-menu";
 import { ResponsiveDialog } from "../forms/responsive-dialog";
 import { Separator } from "../ui/separator";
-import {
-  Clock,
-  CopyCheck,
-  CopyCheckIcon,
-  FolderCheckIcon,
-  MoreVertical,
-  PlusCircleIcon,
-  SquarePen,
-  Trash2,
-} from "lucide-react";
+import { Clock, CopyCheckIcon, PlusCircleIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import DeleteTest from "../forms/DeleteTest";
@@ -74,7 +57,7 @@ const TestList = ({ tests, folder }: Props) => {
         </div>
         <Button
           onClick={() => {
-            router.push("/lec/test/create");
+            router.push(`/lec/test/create/${folder?.id}`);
           }}
         >
           <PlusCircleIcon className="mr-2 h-4 w-4" />

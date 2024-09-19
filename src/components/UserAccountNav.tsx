@@ -12,7 +12,7 @@ import {
 import UserAvatar from "./UserAvatar";
 import Link from "next/link";
 import { signOut } from "next-auth/react";
-import { LogOut } from "lucide-react";
+import { LogOut, Settings } from "lucide-react";
 
 type Props = {
   user: Pick<User, "name" | "image" | "email" | "role">;
@@ -43,7 +43,8 @@ const UserAccountNav = ({ user }: Props) => {
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
           <p className="w-[200px] truncate text-sm text-zinc-700 flex">
-            {user.role}
+            Setting
+            <Settings className="w-4 h-4 ml-2 " />
           </p>
         </DropdownMenuItem>
 

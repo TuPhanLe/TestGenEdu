@@ -8,14 +8,14 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { NavItems } from "@/components/NavItem";
+import { NavItems } from "@/components/bar/NavItem";
 import { cn } from "@/lib/utils";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { ThemeToggle } from "./ThemeToggle";
-import { Button } from "./ui/button";
+import { ThemeToggle } from "../ThemeToggle";
+import { Button } from "../ui/button";
 
-export default function SideNav() {
-  const navItems = NavItems();
+export default function SideNavAdmin() {
+  const navItems = NavItems(true);
 
   const [isSidebarExpanded, setIsSidebarExpanded] = useState<boolean | null>(
     null
@@ -50,7 +50,7 @@ export default function SideNav() {
       <div
         className={cn(
           isSidebarExpanded ? "w-[200px]" : "w-[68px]",
-          "fixed top-[59px] left-0 h-[calc(100vh-59px)] border-r transition-all duration-300 ease-in-out transform hidden sm:flex  z-50" // Adjusted the sidebar height and position
+          "fixed top-0 bottom-0 left-0  border-r transition-all duration-300 ease-in-out transform hidden sm:flex  z-50" // Adjusted the sidebar height and position
         )}
       >
         <aside className="flex h-full flex-col w-full break-words px-4 overflow-x-hidden columns-1">

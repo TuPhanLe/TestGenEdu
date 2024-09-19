@@ -29,6 +29,7 @@ export const checkAnswerSchema = z.object({
 
 export const testSchema = z.object({
   testId: z.string(),
+  folderId: z.string().optional(),
   topic: z
     .string()
     .min(4, { message: "Topic must be at least 4 characters long" })

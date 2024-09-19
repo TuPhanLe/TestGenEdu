@@ -17,8 +17,15 @@ export const POST = async (req: Request) => {
 
     // Parse and validate the request body
     const body = await req.json();
-    const { testId, topic, testDuration, attemptsAllowed, type, paragraphs } =
-      testSchema.parse(body);
+    const {
+      testId,
+      topic,
+      testDuration,
+      attemptsAllowed,
+      type,
+      folderId,
+      paragraphs,
+    } = testSchema.parse(body);
     console.log(body);
 
     // Upsert the test in the database
@@ -30,6 +37,7 @@ export const POST = async (req: Request) => {
         topic,
         testDuration,
         attemptsAllowed,
+        folderId, // Include the folderId in the update operation
       },
       create: {
         id: testId,
@@ -38,6 +46,7 @@ export const POST = async (req: Request) => {
         topic,
         testDuration,
         attemptsAllowed,
+        folderId, // Include the folderId in the create operation
       },
     });
 
@@ -105,6 +114,7 @@ export const POST = async (req: Request) => {
       {
         gameId: test.id,
         creatorId: test.creatorId,
+        folderId: test.folderId, // Return folderId in response
       },
       { status: 200 }
     );

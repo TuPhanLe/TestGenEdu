@@ -8,7 +8,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
-import { Trash, Plus, ChevronDown, ChevronUp } from "lucide-react";
 import {
   Form,
   FormField,
@@ -20,7 +19,6 @@ import {
 } from "../ui/form";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import LoadingQuestion from "../LoadingQuestion";
 import { Textarea } from "../ui/textarea";
 import cuid from "cuid";
 import DropdownCRUD from "../dropdownmenu/DropdownCRUD";
@@ -29,14 +27,16 @@ import FamilyPopoverMenu from "../ui/familypopovermenu";
 import { ResponsiveDialog } from "../forms/responsive-dialog";
 import { CopyClipboard } from "../ui/copy-clipboard";
 
-type Props = {};
+type Props = {
+  folderId?: string; // Add folderId as an optional prop
+};
 
 type Input = z.infer<typeof testSchema>;
 
-const CreateTest = (props: Props) => {
-  const router = useRouter();
+const CreateTest = ({ folderId }: Props) => {
   const [addQuestionBut, setAddQuestionBut] = useState<boolean>(false);
   const [isShareLinkOpen, setIsShareLinkOpen] = useState(false);
+  console.log(folderId);
 
   const { mutate: createTest } = useMutation({
     mutationFn: async ({
@@ -55,6 +55,7 @@ const CreateTest = (props: Props) => {
           type,
           attemptsAllowed,
           paragraphs,
+          folderId: folderId || null, // Send folderId if available, otherwise null
         });
         return response.data;
       } catch (error) {
@@ -83,8 +84,8 @@ const CreateTest = (props: Props) => {
               question: "What is the main focus of the text?",
               answer: "The biodiversity of the Amazon rainforest",
               options: [
-                "The mysteries of the ocen",
-                "The history of acient civilizations",
+                "The mysteries of the ocean",
+                "The history of ancient civilizations",
                 "The exploration of outer space",
               ],
             },
@@ -96,7 +97,7 @@ const CreateTest = (props: Props) => {
               options: [
                 "Snowstorms",
                 "Conservation efforts",
-                "Argicultural expansion",
+                "Agricultural expansion",
               ],
             },
           ],

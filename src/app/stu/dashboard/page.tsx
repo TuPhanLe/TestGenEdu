@@ -1,7 +1,7 @@
 import HistoryCard from "@/components/dashboard/HistoryCard";
 import HotTopicsCard from "@/components/dashboard/HotTopicsCard";
 import RecentActivityCard from "@/components/dashboard/RecentActivityCard";
-import TestCreateCard from "@/components/dashboard/TestCreateCard";
+import JoinTest from "@/components/dashboard/JoinTest";
 import { getAuthSession } from "@/lib/nextauth";
 import { UserRole } from "@prisma/client";
 import { redirect } from "next/navigation";
@@ -33,7 +33,7 @@ const Dasboard = async (props: Props) => {
       </div>
 
       <div className="grid gap-4 mt-4 md:grid-cols-2">
-        <TestCreateCard />
+        <JoinTest />
         <HistoryCard />
       </div>
       <div className="grid gap-4 mt-4 md:grid-cols-2 lg:grid-cols-7">
