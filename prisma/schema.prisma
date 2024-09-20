@@ -40,6 +40,11 @@ enum UserRole {
   LECTURE
   STUDENT
 }
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
 enum LabelQuestion {
   EASY
   MEDIUM 
@@ -61,6 +66,7 @@ model User {
   emailVerified   DateTime?
   image           String?
   role            UserRole     @default(STUDENT)
+  status          UserStatus   @default(ACTIVE)
   studentId       String?      // Student ID (optional, relevant if the role is STUDENT)
   class           String?      // Class (optional, relevant if the role is STUDENT)
   department      String?      // Department (optional, relevant if the role is STUDENT)
@@ -70,8 +76,9 @@ model User {
   accessibleTests TestAccess[]
   createdFolders  Folder[]     @relation("CreatedFolders")
   TestResult      TestResult[]
-  supervisedClasses Class[]   @relation("SupervisedClasses") // Các lớp mà giáo viên phụ trách
-  classes         UserClass[] // Các lớp mà user (sinh viên hoặc giáo viên) tham gia
+  supervisedClasses Class[]   @relation("SupervisedClasses")
+  classes         UserClass[]
+  createdAt       DateTime    @default(now())  // Thêm trường createdAt
   @@index([role]) // Index for filtering users by role
 }
 

@@ -13,13 +13,11 @@ declare module "next-auth" {
   interface Session extends DefaultSession {
     user: {
       id: string;
-      // ...other properties
       role: UserRole;
     } & DefaultSession["user"];
   }
 
   interface User {
-    // ...other properties
     role: UserRole;
   }
 }
@@ -49,6 +47,7 @@ export const authOptions: NextAuthOptions = {
       }
       return token;
     },
+
     session: ({ session, token }) => {
       if (token) {
         session.user.id = token.id;

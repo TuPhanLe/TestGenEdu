@@ -8,6 +8,8 @@ import {
   Settings,
   User,
 } from "lucide-react";
+import { signOut } from "next-auth/react";
+import React from "react";
 
 interface NavItem {
   name: string;
@@ -15,6 +17,7 @@ interface NavItem {
   icon: JSX.Element;
   active: boolean;
   position: "top" | "bottom";
+  onClick?: () => void; // Thêm thuộc tính onClick
 }
 
 export const NavItems = (admin: boolean = false): NavItem[] => {
@@ -23,6 +26,10 @@ export const NavItems = (admin: boolean = false): NavItem[] => {
   function isNavItemActive(pathname: string, nav: string) {
     return pathname.includes(nav);
   }
+
+  const handleSignOut = () => {
+    signOut({ callbackUrl: "/" }); // Thay đổi URL chuyển hướng sau khi đăng xuất nếu cần
+  };
 
   if (admin) {
     return [
@@ -63,10 +70,11 @@ export const NavItems = (admin: boolean = false): NavItem[] => {
       },
       {
         name: "Settings",
-        href: "/admin/settings",
+        href: "#", // Đặt href là "#" vì chúng ta sẽ xử lý sự kiện nhấp chuột
         icon: <Settings size={19} />,
-        active: isNavItemActive(pathname, "/admin/settings"),
+        active: isNavItemActive(pathname, "/"),
         position: "bottom",
+        onClick: handleSignOut, // Thêm hàm xử lý sự kiện nhấp chuột
       },
     ];
   }
@@ -109,10 +117,11 @@ export const NavItems = (admin: boolean = false): NavItem[] => {
     },
     {
       name: "Settings",
-      href: "/settings",
+      href: "#", // Đặt href là "#" vì chúng ta sẽ xử lý sự kiện nhấp chuột
       icon: <Settings size={19} />,
       active: isNavItemActive(pathname, "/settings"),
       position: "bottom",
+      onClick: handleSignOut, // Thêm hàm xử lý sự kiện nhấp chuột
     },
   ];
 };
