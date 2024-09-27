@@ -53,7 +53,7 @@ const UserAccountNav = ({ user }: Props) => {
         <DropdownMenuItem
           onSelect={(event) => {
             event.preventDefault();
-            signOut().catch(console.error);
+            signOut({ callbackUrl: "/auth/login" }).catch(console.error);
           }}
           className="text-red-600 cursor-pointer"
         >

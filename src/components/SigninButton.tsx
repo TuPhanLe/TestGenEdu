@@ -3,16 +3,20 @@
 import React from "react";
 import { Button } from "./ui/button";
 import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation"; // Import hook cho chuyển hướng
 
 type Props = {
   text: string;
 };
 
 const SigninButton = ({ text }: Props) => {
+  const router = useRouter(); // Khởi tạo hook điều hướng
+
   return (
     <Button
       onClick={() => {
-        signIn("google").catch(console.error);
+        // Sử dụng hàm signIn để chuyển hướng đến trang đăng nhập
+        signIn(undefined, { callbackUrl: "/auth/login" }).catch(console.error);
       }}
     >
       {text}
