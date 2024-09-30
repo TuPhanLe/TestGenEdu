@@ -9,20 +9,15 @@ type Props = {
 const UserAvatar = ({ user }: Props) => {
   return (
     <Avatar>
-      {user.image ? (
-        <div className="relative w-full h-full aspect-square">
-          <Image
-            fill
-            src={user.image}
-            alt="profile image"
-            referrerPolicy="no-referrer"
-          />
-        </div>
-      ) : (
-        <AvatarFallback>
-          <span className="sr-only">{user?.name}</span>
-        </AvatarFallback>
-      )}
+      <Image
+        fill
+        src={"/images/user.jpg"}
+        alt="profile image"
+        referrerPolicy="no-referrer"
+      />
+      <AvatarFallback>
+        <span className="sr-only">{user?.name}</span>
+      </AvatarFallback>
     </Avatar>
   );
 };

@@ -13,14 +13,15 @@ import { loginSchema } from "@/schemas/form/authschema";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useState, useTransition } from "react"; // Import các hook từ React
-import { authenticate } from "@/lib/action"; // Giả sử bạn có hàm authenticate này
-import { useRouter } from "next/navigation"; // Import hook cho chuyển hướng
+import { useState, useTransition } from "react";
+import { authenticate } from "@/lib/action";
+import { useRouter } from "next/navigation";
+import { UserRole } from "@prisma/client";
 
 export function LoginForm() {
   const [isPending, startTransition] = useTransition();
-  const [errorMessage, setErrorMessage] = useState<string | null>(null); // Sử dụng useState để quản lý error message
-  const router = useRouter(); // Khởi tạo hook điều hướng
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const router = useRouter();
 
   type LoginFormData = z.infer<typeof loginSchema>;
 
@@ -33,23 +34,21 @@ export function LoginForm() {
   });
 
   const onSubmit = (data: LoginFormData) => {
-    // Chuyển đổi dữ liệu thành FormData
     const formData = new FormData();
     formData.append("username", data.username);
     formData.append("password", data.password);
     console.log(formData);
 
-    // Bắt đầu quá trình đăng nhập
     startTransition(async () => {
       try {
         const result = await authenticate(undefined, formData);
 
-        if (result.success) {
-          // Đăng nhập thành công, điều hướng đến dashboard hoặc trang mong muốn
-          router.push("/stu/dashboard"); // Điều hướng sau khi đăng nhập thành công
-        } else {
-          // Đăng nhập thất bại, hiển thị thông báo lỗi
-          setErrorMessage(result.message);
+        if (result.role === UserRole.STUDENT) {
+          router.push("/stu/dashboard");
+        } else if (result.role === UserRole.LECTURE) {
+          router.push("/lec/dashboard");
+        } else if (result.role === UserRole.ADMIN) {
+          router.push("/admin/dashboard");
         }
       } catch (error) {
         setErrorMessage("An unexpected error occurred.");

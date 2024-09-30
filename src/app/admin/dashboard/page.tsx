@@ -6,6 +6,7 @@ import { DashboardAdmin } from "@/components/ComponentTesting";
 import UserAnalytics from "@/components/dashboard/UserAnalytics";
 import SubUserAnalytics from "@/components/dashboard/admin/SubUserAnalytics";
 import { UserRole } from "@prisma/client";
+import { formatDate } from "@/lib/utils";
 
 export const metadata = {
   title: "TEST GEN EDU | DNU",
@@ -30,37 +31,55 @@ const action = async ({ searchParams }: Props) => {
     return null;
   }
 
-  // Count the number of users, excluding the current user
   const userCount = (await prisma.user.count()) - 1;
 
-  // Count the number of lecturers (assuming their role is 'LECTURER')
   const lecturerCount = await prisma.user.count({
     where: {
       role: "LECTURE",
     },
   });
 
-  // Count the number of students (assuming their role is 'STUDENT')
   const studentCount = await prisma.user.count({
     where: {
       role: "STUDENT",
     },
   });
-
-  // Count the number of classes
-  const classCount = await prisma.class.count();
-
-  // Fetch all users (you can select specific fields if needed)
   const users = await prisma.user.findMany({
     select: {
       id: true,
       name: true,
+      userName: true,
       email: true,
       role: true,
       status: true, // Assuming status like "active" is present
       createdAt: true, // Assuming createdAt is present
+      class: true,
+      department: true,
+      studentId: true,
     },
   });
+  const classes = await prisma.class.findMany({
+    select: {
+      id: true, // Lấy id của lớp
+      name: true, // Lấy tên lớp
+      createdAt: true, // Assuming createdAt is present
+      supervisor: {
+        select: {
+          name: true, // Lấy tên giáo viên phụ trách
+        },
+      },
+      students: true, // Đếm số lượng
+    },
+  });
+
+  const formattedClasses = classes.map((classItem) => ({
+    id: classItem.id,
+    name: classItem.name,
+    supervisorName: classItem.supervisor?.name || "No supervisor", // Lấy tên giáo viên phụ trách, nếu không có thì hiển thị 'No supervisor'
+    studentCount: classItem.students.length, // Đếm số lượng  // Số lượng sinh viên trong lớp
+    createdAt: formatDate(classItem.createdAt),
+  }));
+  const classCount = await prisma.class.count();
 
   return (
     <>
@@ -74,8 +93,7 @@ const action = async ({ searchParams }: Props) => {
           studentCount={studentCount}
           classCount={classCount}
         />
-        {/* Pass the user data to SubUserAnalytics component */}
-        <SubUserAnalytics users={users} />
+        <SubUserAnalytics users={users} classes={formattedClasses} />
       </main>
     </>
   );

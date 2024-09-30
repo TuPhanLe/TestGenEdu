@@ -15,7 +15,7 @@ import { ThemeToggle } from "../ThemeToggle";
 import { Button } from "../ui/button";
 
 export default function SideNav() {
-  const navItems = NavItems();
+  const navItems = NavItems(); // Gọi hàm NavItems để lấy danh sách mục điều hướng
 
   const [isSidebarExpanded, setIsSidebarExpanded] = useState<boolean | null>(
     null
@@ -90,6 +90,7 @@ export default function SideNav() {
                         path={item.href}
                         active={item.active}
                         isSidebarExpanded={isSidebarExpanded}
+                        onClick={item.onClick} // Truyền sự kiện onClick nếu có
                       />
                     </div>
                   </Fragment>
@@ -122,12 +123,24 @@ export const SideNavItem: React.FC<{
   path: string;
   active: boolean;
   isSidebarExpanded: boolean;
-}> = ({ label, icon, path, active, isSidebarExpanded }) => {
+  onClick?: () => void; // Thêm thuộc tính onClick
+}> = ({ label, icon, path, active, isSidebarExpanded, onClick }) => {
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault(); // Ngăn chặn hành động mặc định
+    if (onClick) {
+      onClick(); // Gọi hàm onClick nếu có
+    } else {
+      // Chuyển hướng nếu không có onClick
+      window.location.href = path;
+    }
+  };
+
   return (
     <>
       {isSidebarExpanded ? (
-        <Link
+        <a
           href={path}
+          onClick={handleClick} // Thêm hàm xử lý sự kiện nhấp chuột
           className={`h-full relative flex items-center whitespace-nowrap rounded-md ${
             active
               ? "font-base text-sm bg-neutral-200 shadow-sm text-neutral-700 dark:bg-neutral-800 dark:text-white"
@@ -138,13 +151,14 @@ export const SideNavItem: React.FC<{
             {icon}
             <span>{label}</span>
           </div>
-        </Link>
+        </a>
       ) : (
         <TooltipProvider delayDuration={70}>
           <Tooltip>
             <TooltipTrigger>
-              <Link
+              <a
                 href={path}
+                onClick={handleClick} // Thêm hàm xử lý sự kiện nhấp chuột
                 className={`h-full relative flex items-center whitespace-nowrap rounded-md ${
                   active
                     ? "font-base text-sm bg-neutral-200 text-neutral-700 dark:bg-neutral-800 dark:text-white"
@@ -154,7 +168,7 @@ export const SideNavItem: React.FC<{
                 <div className="relative font-base text-sm p-2 flex flex-row items-center space-x-2 rounded-md duration-100">
                   {icon}
                 </div>
-              </Link>
+              </a>
             </TooltipTrigger>
             <TooltipContent
               side="left"

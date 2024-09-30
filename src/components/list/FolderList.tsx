@@ -90,7 +90,7 @@ const FolderList = ({ folders, tests }: Props) => {
         title="Folder"
       >
         <CreateFolder
-          onCreateSuccess={handleCreateSuccess} // Pass the updated function here
+          onCreateSuccess={handleCreateSuccess}
           setIsOpen={setIsEditOpen}
           tests={tests}
         />

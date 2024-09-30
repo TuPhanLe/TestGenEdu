@@ -91,8 +91,7 @@ model Class {
   supervisorId  String?  // ID giáo viên phụ trách (có thể null nếu chưa có giáo viên)
   supervisor    User?    @relation("SupervisedClasses", fields: [supervisorId], references: [id])
   students      UserClass[] // Mối quan hệ nhiều-nhiều qua bảng UserClass
-  studentCount  Int      @default(0) // Số lượng sinh viên
-
+  createdAt     DateTime    @default(now())  // Thêm trường createdAt
   @@index([supervisorId]) // Thêm chỉ mục vào supervisorId
 }
 model UserClass {

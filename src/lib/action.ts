@@ -1,8 +1,8 @@
 import { signIn } from "next-auth/react";
 import { z } from "zod";
-import { useRouter } from "next/router"; // Sử dụng router để định tuyến người dùng
+import { useRouter } from "next/router";
+import { getAuthSession } from "@/lib/nextauth";
 
-// Định nghĩa lỗi AuthError nếu muốn bắt các lỗi tùy chỉnh
 class AuthError extends Error {
   constructor(message: string, public type: string) {
     super(message);
@@ -10,7 +10,6 @@ class AuthError extends Error {
   }
 }
 
-// FormData validation schema (nếu cần, dùng zod)
 const loginSchema = z.object({
   username: z.string(),
   password: z.string(),
@@ -20,7 +19,7 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 export async function authenticate(
   prevState: string | undefined,
-  formData: FormData // FormData truyền từ phía client
+  formData: FormData
 ) {
   try {
     const formObject: LoginFormData = {
@@ -28,19 +27,22 @@ export async function authenticate(
       password: formData.get("password") as string,
     };
 
-    // Xác thực dữ liệu đầu vào bằng loginSchema
-    console.log(formObject);
-
     const result = await signIn("credentials", {
       ...formObject,
-      redirect: false, // Đảm bảo bạn đang kiểm soát luồng logic điều hướng
+      redirect: false,
     });
 
-    // Nếu đăng nhập thành công
     if (!result?.error) {
-      return { success: true, message: "Sign in successful!" };
+      const response = await fetch("/api/user/role", {
+        method: "GET", // Sử dụng GET để lấy thông tin
+      });
+
+      const userData = await response.json();
+
+      const role = userData.role;
+
+      return { success: true, role: role, message: "Sign in successful!" };
     } else {
-      // Nếu có lỗi đăng nhập
       throw new AuthError(result.error, result.error);
     }
   } catch (error) {
@@ -55,6 +57,6 @@ export async function authenticate(
           };
       }
     }
-    throw error; // Ném lại lỗi nếu có
+    throw error;
   }
 }

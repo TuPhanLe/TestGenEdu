@@ -20,3 +20,8 @@ export function formatTimeDelta(seconds: number) {
   }
   return parts.join(" ");
 }
+export const formatDate = (date: Date) => {
+  return new Date(date).toLocaleDateString("vi-VN", {
+    timeZone: "Asia/Ho_Chi_Minh",
+  });
+};

@@ -8,8 +8,7 @@ import {
 import CredentialsProvider from "next-auth/providers/credentials";
 import { prisma } from "@/lib/db";
 import { UserRole } from "@prisma/client";
-import { compareSync } from "bcrypt-ts";
-
+import { hashSync, compareSync } from "bcrypt-ts";
 declare module "next-auth" {
   interface Session extends DefaultSession {
     user: {
@@ -41,15 +40,9 @@ export const authOptions: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
     jwt: async ({ token }) => {
-      console.log(token);
-
-      // Kiểm tra nếu token đã có trường sub
       if (token.sub) {
-        // Nếu có, hãy cập nhật nó với id của người dùng
-        token.id = token.sub; // Cập nhật token.id thành token.sub
+        token.id = token.sub;
       }
-
-      // Tìm người dùng trong cơ sở dữ liệu
       const db_user = await prisma.user.findFirst({
         where: {
           id: token.id,
@@ -73,7 +66,6 @@ export const authOptions: NextAuthOptions = {
         session.user.image = token.picture;
         session.user.role = token.role;
       }
-      console.log(session.user);
 
       return session;
     },
@@ -94,18 +86,17 @@ export const authOptions: NextAuthOptions = {
         const user = await prisma.user.findUnique({
           where: { userName: credentials.username },
         });
-        console.log(user);
 
         if (user) {
-          // const decryptedPassword = compareSync(
-          //   user.password,
-          //   credentials.password
-          // );
-          // if (decryptedPassword) {
+          const decryptedPassword = compareSync(
+            credentials.password,
+            user.password
+          );
 
-          // } else {
-          //   throw new Error("Tài khoản không tồn tại");
-          // }
+          if (decryptedPassword) {
+          } else {
+            throw new Error("Tài khoản không tồn tại");
+          }
           return { id: user.id, userName: user.userName, role: user.role };
         } else {
           return null;

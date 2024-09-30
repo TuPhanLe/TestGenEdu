@@ -28,7 +28,7 @@ export const NavItems = (admin: boolean = false): NavItem[] => {
   }
 
   const handleSignOut = () => {
-    signOut({ callbackUrl: "/" }); // Thay đổi URL chuyển hướng sau khi đăng xuất nếu cần
+    signOut({ callbackUrl: "/auth/login" }).catch(console.error);
   };
 
   if (admin) {
@@ -69,7 +69,7 @@ export const NavItems = (admin: boolean = false): NavItem[] => {
         position: "bottom",
       },
       {
-        name: "Settings",
+        name: "Logout",
         href: "#", // Đặt href là "#" vì chúng ta sẽ xử lý sự kiện nhấp chuột
         icon: <Settings size={19} />,
         active: isNavItemActive(pathname, "/"),
