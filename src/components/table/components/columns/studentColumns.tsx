@@ -9,6 +9,7 @@ import { DataTableColumnHeader } from "../data-table-column-header";
 import { DataTableRowActions } from "../data-table-row-actions";
 import { priorities, statuses } from "../data/data";
 import { Student } from "@/schemas/form/studentColumns";
+
 export const studentColumns: ColumnDef<Student>[] = [
   {
     id: "select",
@@ -132,9 +133,5 @@ export const studentColumns: ColumnDef<Student>[] = [
     //   return value.includes(row.getValue(id));
     // },
     cell: ({ row }) => <div>{row.getValue("department")}</div>,
-  },
-  {
-    id: "actions",
-    cell: ({ row }) => <DataTableRowActions row={row} />,
   },
 ];
