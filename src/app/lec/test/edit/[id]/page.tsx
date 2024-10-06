@@ -22,7 +22,7 @@ const EditPage = async ({ params: { id } }: Props) => {
     redirect("/");
   }
 
-  if (session.user.role !== UserRole.LECTURE) {
+  if (session.user.role !== UserRole.LECTURER) {
     redirect("/not-authorized");
     return null;
   }

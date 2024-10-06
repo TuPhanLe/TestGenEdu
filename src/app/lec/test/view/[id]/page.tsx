@@ -25,7 +25,7 @@ const View = async ({ params: { id } }: Props) => {
     return null;
   }
 
-  if (session.user.role !== UserRole.LECTURE) {
+  if (session.user.role !== UserRole.LECTURER) {
     redirect("/not-authorized");
     return null;
   }

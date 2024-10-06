@@ -3,7 +3,9 @@ import {
   ArrowRightIcon,
   ArrowUpIcon,
   CheckCircledIcon,
+  CheckIcon,
   CircleIcon,
+  Cross2Icon,
   CrossCircledIcon,
   QuestionMarkCircledIcon,
   StopwatchIcon,
@@ -11,46 +13,26 @@ import {
 
 export const statuses = [
   {
-    value: "backlog",
-    label: "Backlog",
-    icon: QuestionMarkCircledIcon,
+    value: "ACTIVE",
+    label: "ACTIVE",
   },
   {
-    value: "todo",
-    label: "Todo",
-    icon: CircleIcon,
-  },
-  {
-    value: "in progress",
-    label: "In Progress",
-    icon: StopwatchIcon,
-  },
-  {
-    value: "done",
-    label: "Done",
-    icon: CheckCircledIcon,
-  },
-  {
-    value: "canceled",
-    label: "Canceled",
-    icon: CrossCircledIcon,
+    value: "INACTIVE",
+    label: "INACTIVE",
   },
 ];
 
 export const priorities = [
   {
-    label: "Low",
-    value: "low",
-    icon: ArrowDownIcon,
+    label: "ADMIN",
+    value: "ADMIN",
   },
   {
-    label: "Medium",
-    value: "medium",
-    icon: ArrowRightIcon,
+    label: "LECTURER",
+    value: "LECTURER",
   },
   {
-    label: "High",
-    value: "high",
-    icon: ArrowUpIcon,
+    label: "STUDENT",
+    value: "STUDENT",
   },
 ];

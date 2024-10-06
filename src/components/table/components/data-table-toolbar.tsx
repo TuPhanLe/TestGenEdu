@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 
 import { DataTableFacetedFilter } from "./data-table-faceted-filter";
 import { priorities, statuses } from "./data/data";
-import { DataTableViewOptions } from "./data-table-view-options";
+import { DataTableOptions } from "./data-table-options";
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;
@@ -23,10 +23,14 @@ export function DataTableToolbar<TData>({
     <div className="flex items-center justify-between">
       <div className="flex flex-1 items-center space-x-2">
         <Input
-          placeholder="Filter tasks..."
-          value={(table.getColumn("title")?.getFilterValue() as string) ?? ""}
-          onChange={(event) =>
-            table.getColumn("title")?.setFilterValue(event.target.value)
+          placeholder="Filter name..."
+          value={
+            (table.getColumn("userName")?.getFilterValue() as string) ?? ""
+          }
+          onChange={
+            (event) => {
+              table.getColumn("userName")?.setFilterValue(event.target.value);
+            } //
           }
           className="h-8 w-[150px] lg:w-[250px]"
         />
@@ -37,10 +41,10 @@ export function DataTableToolbar<TData>({
             options={statuses}
           />
         )}
-        {table.getColumn("priority") && (
+        {table.getColumn("role") && (
           <DataTableFacetedFilter
-            column={table.getColumn("priority")}
-            title="Priority"
+            column={table.getColumn("role")}
+            title="role"
             options={priorities}
           />
         )}
@@ -55,7 +59,7 @@ export function DataTableToolbar<TData>({
           </Button>
         )}
       </div>
-      <DataTableViewOptions table={table} />
+      <DataTableOptions table={table} addType="all" />
     </div>
   );
 }

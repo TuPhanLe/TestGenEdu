@@ -4,6 +4,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
+  DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "../ui/button";
@@ -54,6 +55,7 @@ const DropdownCRUD = ({
               className="w-full justify-start flex text-red-500 rounded-md p-2 transition-all duration-75 hover:bg-neutral-100"
             >
               <IconMenu text="Delete" icon={<Trash2 className="h-4 w-4" />} />
+              <DropdownMenuShortcut>⌘⌫</DropdownMenuShortcut>
             </button>
           </DropdownMenuItem>
         )}

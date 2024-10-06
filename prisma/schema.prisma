@@ -37,7 +37,7 @@ model Session {
 }
 enum UserRole {
   ADMIN
-  LECTURE
+  LECTURER
   STUDENT
 }
 enum UserStatus {

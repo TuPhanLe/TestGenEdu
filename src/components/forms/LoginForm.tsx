@@ -45,7 +45,7 @@ export function LoginForm() {
 
         if (result.role === UserRole.STUDENT) {
           router.push("/stu/dashboard");
-        } else if (result.role === UserRole.LECTURE) {
+        } else if (result.role === UserRole.LECTURER) {
           router.push("/lec/dashboard");
         } else if (result.role === UserRole.ADMIN) {
           router.push("/admin/dashboard");

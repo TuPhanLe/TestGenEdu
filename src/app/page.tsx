@@ -15,7 +15,7 @@ export default async function Home() {
   if (session?.user.role === UserRole.STUDENT) {
     return redirect("/stu/dashboard");
   }
-  if (session?.user.role === UserRole.LECTURE) {
+  if (session?.user.role === UserRole.LECTURER) {
     return redirect("/lec/dashboard");
   }
   if (session?.user.role === UserRole.ADMIN) {

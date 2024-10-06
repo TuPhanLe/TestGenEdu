@@ -18,7 +18,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-import { Class } from "@/schemas/form/classSubSchema";
+import { Class } from "@/schemas/form/Columns/classSubSchema";
+import DropdownCRUD from "@/components/dropdownmenu/DropdownCRUD";
+import { ResponsiveDialog } from "@/components/forms/responsive-dialog";
+import { useState } from "react";
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>;
@@ -27,25 +30,35 @@ interface DataTableRowActionsProps<TData> {
 export function DataTableRowActions<TData>({
   row,
 }: DataTableRowActionsProps<TData>) {
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [selectedRow, setSelectedRow] = useState<string | null>(null);
+
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          className="flex h-8 w-8 p-0 data-[state=open]:bg-muted"
-        >
-          <DotsHorizontalIcon className="h-4 w-4" />
-          <span className="sr-only">Open menu</span>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-[160px]">
-        <DropdownMenuItem>Edit</DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem>
-          Delete
-          <DropdownMenuShortcut>⌘⌫</DropdownMenuShortcut>
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <>
+      <ResponsiveDialog
+        isOpen={isDeleteOpen}
+        setIsOpen={setIsDeleteOpen}
+        title="Delete User"
+        description="Are you sure you want to delete this user?"
+      >
+        <>asadas</>
+      </ResponsiveDialog>
+      <ResponsiveDialog
+        isOpen={isEditOpen}
+        setIsOpen={setIsEditOpen}
+        title="Edit User"
+      >
+        <>asadas</>
+      </ResponsiveDialog>
+      <DropdownCRUD
+        edit={() => {
+          setIsEditOpen(true);
+        }}
+        delete={() => {
+          setIsDeleteOpen(true);
+        }}
+      />
+    </>
   );
 }

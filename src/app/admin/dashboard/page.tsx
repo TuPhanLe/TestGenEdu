@@ -35,13 +35,13 @@ const action = async ({ searchParams }: Props) => {
 
   const lecturerCount = await prisma.user.count({
     where: {
-      role: "LECTURE",
+      role: UserRole.LECTURER,
     },
   });
 
   const studentCount = await prisma.user.count({
     where: {
-      role: "STUDENT",
+      role: UserRole.STUDENT,
     },
   });
   const users = await prisma.user.findMany({

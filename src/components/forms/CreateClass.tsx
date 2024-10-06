@@ -1,7 +1,9 @@
 "use client";
 
 import React, { useState } from "react";
-import { DataTableLecturer } from "@/components/table/components/data-table-lecturer";
+import { useForm, SubmitHandler } from "react-hook-form"; // Import useForm
+import { useMutation } from "@tanstack/react-query";
+import axios from "axios"; // Import axios
 import { studentColumns } from "@/components/table/components/columns/studentColumns";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,8 +15,15 @@ import {
   useLecturerSelection,
 } from "@/hooks/SelectionContext";
 import { lecturerColumns } from "../table/components/columns/lecturerColumns";
-import { DataTableStudent } from "../table/components/data-table-student";
+import { DataTableStudent } from "../table/components/mainTable/data-table-student";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"; // Import Card UI
+import { Input } from "@/components/ui/input"; // Import Input UI
+import { DataTableLecturer } from "../table/components/mainTable/data-table-lecturer";
+
+// Định nghĩa dữ liệu form
+type FormData = {
+  className: string; // Thuộc tính cho tên lớp
+};
 
 type Class = {
   id: string;
@@ -47,7 +56,7 @@ type Lecturer = {
 type Props = {
   formattedClasses: Class[];
   formattedStudents: Student[];
-  formattedLecturers: Lecturer[]; // Thêm prop cho giảng viên
+  formattedLecturers: Lecturer[];
 };
 
 const CreateClass = ({
@@ -58,10 +67,30 @@ const CreateClass = ({
   const { selectedStudentRows } = useStudentSelection(); // Lấy danh sách sinh viên đã chọn
   const { selectedLecturerRows } = useLecturerSelection(); // Lấy danh sách giảng viên đã chọn
 
-  const handleSubmit = () => {
-    console.log("Selected Students:", selectedStudentRows);
-    console.log("Selected Lecturers:", selectedLecturerRows);
-    // Thực hiện hành động với các hàng được chọn
+  // Sử dụng useForm hook
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormData>();
+
+  // Sử dụng useMutation để gọi API createClass
+  const { mutate: createClass, isPending } = useMutation({
+    mutationFn: async (formData: FormData) => {
+      const payload = {
+        className: formData.className,
+        students: selectedStudentRows,
+        lecturers: selectedLecturerRows,
+      };
+
+      const response = await axios.post("/api/class/create", payload); // Thay đổi URL cho phù hợp với backend của bạn
+      return response.data;
+    },
+  });
+
+  // Xử lý khi nộp form
+  const onSubmit: SubmitHandler<FormData> = (data) => {
+    createClass(data); // Gọi mutation khi form được submit
   };
 
   // State để theo dõi trạng thái mở rộng
@@ -69,7 +98,27 @@ const CreateClass = ({
   const [isStudentExpanded, setStudentExpanded] = useState(false);
 
   return (
-    <div>
+    <form onSubmit={handleSubmit(onSubmit)}>
+      {/* Card for Class Name Input */}
+      <Card className="mb-4">
+        <CardHeader className="cursor-pointer">
+          <CardTitle className="text-lg font-semibold">
+            Create your class name.
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Input
+            {...register("className", { required: "Class name is required" })}
+            placeholder="Enter class name"
+          />
+          {errors.className && (
+            <p className="text-red-500 text-sm mt-2">
+              {errors.className.message}
+            </p>
+          )}
+        </CardContent>
+      </Card>
+
       {/* Card for Lecturers */}
       <Card className="mb-4">
         <CardHeader
@@ -77,7 +126,7 @@ const CreateClass = ({
           className="cursor-pointer"
         >
           <CardTitle className="text-lg font-semibold">
-            Lecturers Table
+            Choose lecturer
           </CardTitle>
         </CardHeader>
         {isLecturerExpanded && (
@@ -97,7 +146,7 @@ const CreateClass = ({
           className="cursor-pointer"
         >
           <CardTitle className="text-lg font-semibold">
-            Students Table
+            Choose student
           </CardTitle>
         </CardHeader>
         {isStudentExpanded && (
@@ -111,10 +160,14 @@ const CreateClass = ({
       </Card>
 
       {/* Submit Button */}
-      <Button onClick={handleSubmit} className="mt-4">
-        Submit Selected Rows
+      <Button
+        type="submit"
+        className="mt-4 w-full"
+        disabled={isPending} // Disable button if the request is pending
+      >
+        {isPending ? "Submitting..." : "Submit"}
       </Button>
-    </div>
+    </form>
   );
 };
 

@@ -26,11 +26,9 @@ export async function POST(req: Request) {
     // Kiểm tra dữ liệu với schema bằng Zod
     const parsedLecturer = lecturerSchema.parse(json);
     let userStatus: UserStatus;
+    userStatus = UserStatus.INACTIVE;
     if (parsedLecturer.status === "ACTIVE") {
       userStatus = UserStatus.ACTIVE;
-    } else parsedLecturer.status === "INACTIVE";
-    {
-      userStatus = UserStatus.INACTIVE;
     }
 
     // Mã hóa mật khẩu bằng bcrypt-ts
@@ -44,7 +42,7 @@ export async function POST(req: Request) {
         password: hashedPassword, // Lưu mật khẩu đã được mã hóa
         email: parsedLecturer.email,
         status: userStatus, // ACTIVE, INACTIVE hoặc các trạng thái khác
-        role: UserRole.LECTURE, // Vai trò của người dùng là giảng viên
+        role: UserRole.LECTURER, // Vai trò của người dùng là giảng viên
       },
     });
 

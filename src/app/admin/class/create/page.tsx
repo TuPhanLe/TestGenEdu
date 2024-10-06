@@ -3,7 +3,6 @@ import { getAuthSession } from "@/lib/nextauth";
 import { redirect } from "next/navigation";
 import { UserRole } from "@prisma/client";
 import { prisma } from "@/lib/db";
-import { DataTable } from "@/components/table/components/data-table-lecturer";
 import { studentColumns } from "@/components/table/components/columns/studentColumns";
 import CreateClass from "@/components/forms/CreateClass";
 
@@ -71,7 +70,7 @@ const create = async (props: Props) => {
   }));
   const lecturers = await prisma.user.findMany({
     where: {
-      role: "LECTURE", // Lọc theo role là LECTURER
+      role: "LECTURER", // Lọc theo role là LECTURER
     },
     select: {
       id: true,
