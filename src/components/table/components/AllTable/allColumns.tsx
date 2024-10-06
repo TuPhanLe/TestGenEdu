@@ -6,8 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 
 import { DataTableColumnHeader } from "../data-table-column-header";
-import { DataTableRowActions } from "../data-table-row-actions";
-import { priorities, statuses } from "../data/data";
+import { DataTableRowActions } from "./data-table-row-actions-all";
 import { All } from "@/schemas/form/Columns/allColumns";
 
 export const allColumns: ColumnDef<All>[] = [
@@ -85,6 +84,28 @@ export const allColumns: ColumnDef<All>[] = [
       <DataTableColumnHeader column={column} title="Status" />
     ),
     cell: ({ row }) => <div>{row.getValue("status")}</div>,
+    filterFn: (row, id, value) => {
+      return value.includes(row.getValue(id));
+    },
+    enableSorting: false,
+  },
+  {
+    accessorKey: "studentId",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Student ID" />
+    ),
+    cell: ({ row }) => <div>{row.getValue("studentId")}</div>,
+    filterFn: (row, id, value) => {
+      return value.includes(row.getValue(id));
+    },
+    enableSorting: false,
+  },
+  {
+    accessorKey: "department",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Department" />
+    ),
+    cell: ({ row }) => <div>{row.getValue("department")}</div>,
     filterFn: (row, id, value) => {
       return value.includes(row.getValue(id));
     },

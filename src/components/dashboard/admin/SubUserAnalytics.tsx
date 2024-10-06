@@ -1,14 +1,12 @@
 import React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UserRole, UserStatus } from "@prisma/client";
-import TableAnalyst from "./tableAnalytics/tableAnalyst";
-import ClassAnalyst from "./tableAnalytics/classAnalyst";
 import { allSchema } from "@/schemas/form/Columns/allColumns";
-import { DataTableAll } from "@/components/table/components/mainTable/data-table-all";
-import { allColumns } from "@/components/table/components/columns/allColumns";
+import { DataTableAll } from "@/components/table/components/AllTable/data-table-all";
+import { allColumns } from "@/components/table/components/AllTable/allColumns";
 import { formatDate } from "@/lib/utils";
-import { DataTableLecturer } from "@/components/table/components/mainTable/data-table-lecturer";
-import { lecturerColumns } from "@/components/table/components/columns/lecturerColumns";
+import { DataTableClas } from "@/components/table/components/ClassTable/data-table-class";
+import { classColumns } from "@/components/table/components/ClassTable/classColumns";
 
 type UserData = {
   id: string;
@@ -52,6 +50,8 @@ const SubUserAnalytics = ({ users, classes }: SubUserAnalyticsProps) => {
       userName: user.userName || "N/A",
       role,
       dateJoined,
+      studentId: user.studentId || "N/A",
+      department: user.department || "N/A",
       email: user.email || "N/A",
       status,
     };
@@ -120,6 +120,14 @@ const SubUserAnalytics = ({ users, classes }: SubUserAnalyticsProps) => {
       return formattedStudent;
     });
 
+  // Filter and format classes
+  const formattedClasses = classes.map((classData) => ({
+    id: classData.id,
+    name: classData.name || "N/A", // Ensure name is not null
+    supervisorName: classData.supervisorName || "N/A", // Ensure supervisorName is not null
+    studentCount: classData.studentCount, // Assuming studentCount is always a number
+    createdAt: formatDate(new Date(classData.createdAt)), // Format the date properly
+  }));
   return (
     <Tabs defaultValue="all">
       <div className="flex items-center">
@@ -134,7 +142,7 @@ const SubUserAnalytics = ({ users, classes }: SubUserAnalyticsProps) => {
         <DataTableAll columns={allColumns} data={formattedUsers} />
       </TabsContent>
       <TabsContent value="class">
-        {/* <ClassAnalyst classes={classes} title="Classes" /> */}
+        <DataTableClas columns={classColumns} data={formattedClasses} />
       </TabsContent>
     </Tabs>
   );

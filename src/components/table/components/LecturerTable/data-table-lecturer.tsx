@@ -24,20 +24,20 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
+import { useLecturerSelection } from "@/hooks/SelectionContext";
+import { DataTableToolbar } from "../AllTable/data-table-toolbar-all";
 import { DataTablePagination } from "../data-table-pagination";
-import { DataTableToolbar } from "../data-table-toolbar";
-import { useStudentSelection } from "@/hooks/SelectionContext";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
 }
 
-export function DataTableStudent<TData, TValue>({
+export function DataTableLecturer<TData, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
-  const { setSelectedStudentRows } = useStudentSelection(); // Sử dụng context mới để lưu hàng đã chọn
+  const { setSelectedLecturerRows } = useLecturerSelection(); // Sử dụng context mới để lưu hàng đã chọn
   const [rowSelection, setRowSelection] = React.useState({});
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] =
@@ -50,7 +50,7 @@ export function DataTableStudent<TData, TValue>({
     const selectedData = table
       .getSelectedRowModel()
       .rows.map((row) => row.original);
-    setSelectedStudentRows(selectedData); // Cập nhật danh sách chọn của học sinh
+    setSelectedLecturerRows(selectedData);
   }, [rowSelection]);
 
   const table = useReactTable({

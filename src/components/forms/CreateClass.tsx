@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form"; // Import useForm
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios"; // Import axios
-import { studentColumns } from "@/components/table/components/columns/studentColumns";
+import { studentColumns } from "@/components/table/components/StudentTable/studentColumns";
 import { Button } from "@/components/ui/button";
 import {
   StudentSelectionProvider,
@@ -14,11 +14,11 @@ import {
   LecturerSelectionProvider,
   useLecturerSelection,
 } from "@/hooks/SelectionContext";
-import { lecturerColumns } from "../table/components/columns/lecturerColumns";
-import { DataTableStudent } from "../table/components/mainTable/data-table-student";
+import { lecturerColumns } from "../table/components/LecturerTable/lecturerColumns";
+import { DataTableStudent } from "../table/components/StudentTable/data-table-student";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"; // Import Card UI
 import { Input } from "@/components/ui/input"; // Import Input UI
-import { DataTableLecturer } from "../table/components/mainTable/data-table-lecturer";
+import { DataTableLecturer } from "../table/components/LecturerTable/data-table-lecturer";
 
 // Định nghĩa dữ liệu form
 type FormData = {

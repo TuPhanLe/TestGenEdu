@@ -9,6 +9,8 @@ export const allSchema = z.object({
   dateJoined: z.string(),
   email: z.string().optional(),
   status: z.string(),
+  studentId: z.string(),
+  department: z.string(),
 });
 
 export type All = z.infer<typeof allSchema>;

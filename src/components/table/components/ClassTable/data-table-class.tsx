@@ -24,20 +24,18 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-import { useLecturerSelection } from "@/hooks/SelectionContext";
-import { DataTableToolbar } from "../data-table-toolbar";
 import { DataTablePagination } from "../data-table-pagination";
+import { DataTableToolbarClass } from "./data-table-toolbar-class";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
 }
 
-export function DataTableLecturer<TData, TValue>({
+export function DataTableClas<TData, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
-  const { setSelectedLecturerRows } = useLecturerSelection(); // Sử dụng context mới để lưu hàng đã chọn
   const [rowSelection, setRowSelection] = React.useState({});
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] =
@@ -45,14 +43,6 @@ export function DataTableLecturer<TData, TValue>({
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
-  // Cập nhật context khi hàng được chọn thay đổi
-  React.useEffect(() => {
-    const selectedData = table
-      .getSelectedRowModel()
-      .rows.map((row) => row.original);
-    setSelectedLecturerRows(selectedData);
-  }, [rowSelection]);
-
   const table = useReactTable({
     data,
     columns,
@@ -77,7 +67,7 @@ export function DataTableLecturer<TData, TValue>({
 
   return (
     <div className="space-y-4">
-      <DataTableToolbar table={table} />
+      <DataTableToolbarClass table={table} />
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -128,7 +118,7 @@ export function DataTableLecturer<TData, TValue>({
           </TableBody>
         </Table>
       </div>
-      <DataTablePagination table={table} />
+      <DataTablePagination table={table} selected={false} />
     </div>
   );
 }

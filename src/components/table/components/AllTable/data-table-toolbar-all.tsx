@@ -6,15 +6,15 @@ import { Table } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-import { DataTableFacetedFilter } from "./data-table-faceted-filter";
-import { priorities, statuses } from "./data/data";
-import { DataTableOptions } from "./data-table-options";
+import { DataTableFacetedFilter } from "../data-table-faceted-filter";
+import { priorities, statuses } from "../data";
+import { DataTableOptions } from "../data-table-options";
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;
 }
 
-export function DataTableToolbar<TData>({
+export function DataTableToolbarAll<TData>({
   table,
 }: DataTableToolbarProps<TData>) {
   const isFiltered = table.getState().columnFilters.length > 0;

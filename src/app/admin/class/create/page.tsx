@@ -3,7 +3,7 @@ import { getAuthSession } from "@/lib/nextauth";
 import { redirect } from "next/navigation";
 import { UserRole } from "@prisma/client";
 import { prisma } from "@/lib/db";
-import { studentColumns } from "@/components/table/components/columns/studentColumns";
+import { studentColumns } from "@/components/table/components/StudentTable/studentColumns";
 import CreateClass from "@/components/forms/CreateClass";
 
 type Props = {};

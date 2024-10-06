@@ -32,11 +32,9 @@ export async function POST(req: Request) {
 
     // Điều kiện để trả về giá trị từ enum UserStatus
     let userStatus: UserStatus;
+    userStatus = UserStatus.INACTIVE;
     if (parsedStudent.status === "ACTIVE") {
       userStatus = UserStatus.ACTIVE;
-    } else parsedStudent.status === "INACTIVE";
-    {
-      userStatus = UserStatus.INACTIVE;
     }
 
     // Tạo sinh viên mới trong cơ sở dữ liệu với role là STUDENT
