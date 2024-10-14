@@ -16,13 +16,13 @@ const MCQpage = async ({ params: { testId } }: Props) => {
     redirect("/");
   }
 
-  // Fetch the test details with attemptsAllowed, paragraphs, and questions
+  // Fetch the test details with attemptsAllowed, part, and questions
   const test = await prisma.test.findUnique({
     where: {
       id: testId,
     },
     include: {
-      paragraphs: {
+      parts: {
         select: {
           id: true,
           content: true,

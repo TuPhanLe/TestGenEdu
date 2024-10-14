@@ -14,7 +14,7 @@ import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import axios from "axios";
-import { lecturerSchema } from "@/schemas/form/lecturer";
+import { studentSchema } from "@/schemas/form/student";
 import {
   Select,
   SelectContent,
@@ -22,55 +22,61 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { lectureColumnsSchema } from "@/schemas/form/Columns/lecturerColumns";
+import { studentCollumsSchema } from "@/schemas/form/Columns/studentColumns";
 
-// Define LecturerData interface
-interface LecturerData {
+// Define StudentData interface
+interface StudentData {
   name: string;
   userName: string;
   password: string;
   email?: string; // Optional
   status: string;
+  studentId: string;
+  class: string;
+  department: string;
 }
 
 // Define the props with userName
 type Props = {
   userName: string;
   setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  onEditSuccess: (updatedLecturer: any) => void;
+  onEditSuccess: (updatedStudent: any) => void;
 };
 
-export const EditLecturer: React.FC<Props> = ({
+export const EditStudent: React.FC<Props> = ({
   userName,
   setIsOpen,
   onEditSuccess,
 }) => {
-  const [lecturerData, setLecturerData] = useState<LecturerData | null>(null);
+  const [studentData, setStudentData] = useState<StudentData | null>(null);
   const [isFetching, setIsFetching] = useState<boolean>(true); // Loading state
 
-  type Input = z.infer<typeof lectureColumnsSchema>;
+  type Input = z.infer<typeof studentCollumsSchema>;
 
   // Set up form
   const form = useForm<Input>({
-    resolver: zodResolver(lectureColumnsSchema),
+    resolver: zodResolver(studentCollumsSchema),
     defaultValues: {
       name: "",
       userName: "",
       password: "",
       email: "",
       status: "ACTIVE",
+      studentId: "",
+      class: "",
+      department: "",
     },
   });
 
-  // Fetch lecturer data based on userName using useEffect
+  // Fetch student data based on userName using useEffect
   useEffect(() => {
-    const fetchLecturerData = async () => {
+    const fetchStudentData = async () => {
       try {
         setIsFetching(true);
-        const response = await axios.get(`/api/user/get/lecturer`, {
+        const response = await axios.get(`/api/user/get/student`, {
           params: { userName }, // Pass userName in query parameters
         });
-        const data: LecturerData = response.data;
+        const data: StudentData = response.data;
 
         // Update form with fetched data
         form.reset({
@@ -78,31 +84,34 @@ export const EditLecturer: React.FC<Props> = ({
           userName: data.userName || "N/A",
           email: data.email || "",
           status: data.status || "ACTIVE",
+          studentId: data.studentId || "",
+          class: data.class || "",
+          department: data.department || "",
           password: "",
         });
 
-        setLecturerData(data); // Save data to local state
+        setStudentData(data); // Save data to local state
       } catch (error) {
-        console.error("Error fetching lecturer data:", error);
+        console.error("Error fetching student data:", error);
       } finally {
         setIsFetching(false); // Hide loading spinner
       }
     };
 
-    fetchLecturerData();
+    fetchStudentData();
   }, [userName, form]);
 
-  // Mutation for updating lecturer data
+  // Mutation for updating student data
   const [isPending, setIsPending] = useState(false); // Pending state for update
 
   const onSubmit = async (formData: Input) => {
     try {
       setIsPending(true);
-      const response = await axios.put(`/api/user/update/lecturer`, formData);
+      const response = await axios.put(`/api/user/update/student`, formData);
       onEditSuccess(response.data);
       setIsOpen(false);
     } catch (error) {
-      console.error("Error updating lecturer:", error);
+      console.error("Error updating student:", error);
     } finally {
       setIsPending(false);
     }
@@ -126,7 +135,7 @@ export const EditLecturer: React.FC<Props> = ({
             <FormItem>
               <FormLabel>Name</FormLabel>
               <FormControl>
-                <Input {...field} placeholder="Lecturer Name" />
+                <Input {...field} placeholder="Student Name" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -176,6 +185,51 @@ export const EditLecturer: React.FC<Props> = ({
               <FormLabel>Email (Optional)</FormLabel>
               <FormControl>
                 <Input {...field} placeholder="Email" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Student ID Field */}
+        <FormField
+          control={form.control}
+          name="studentId"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Student ID</FormLabel>
+              <FormControl>
+                <Input {...field} placeholder="Student ID" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Class Field */}
+        <FormField
+          control={form.control}
+          name="class"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Class</FormLabel>
+              <FormControl>
+                <Input {...field} placeholder="Class" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Department Field */}
+        <FormField
+          control={form.control}
+          name="department"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Department</FormLabel>
+              <FormControl>
+                <Input {...field} placeholder="Department" />
               </FormControl>
               <FormMessage />
             </FormItem>

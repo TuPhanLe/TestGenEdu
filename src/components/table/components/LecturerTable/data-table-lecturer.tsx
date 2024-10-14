@@ -25,8 +25,8 @@ import {
 } from "@/components/ui/table";
 
 import { useLecturerSelection } from "@/hooks/SelectionContext";
-import { DataTableToolbar } from "../AllTable/data-table-toolbar-all";
 import { DataTablePagination } from "../data-table-pagination";
+import { DataTableToolbarAll } from "../AllTable/data-table-toolbar-all";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -77,7 +77,7 @@ export function DataTableLecturer<TData, TValue>({
 
   return (
     <div className="space-y-4">
-      <DataTableToolbar table={table} />
+      <DataTableToolbarAll table={table} />
       <div className="rounded-md border">
         <Table>
           <TableHeader>

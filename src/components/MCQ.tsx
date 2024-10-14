@@ -1,5 +1,5 @@
 "use client";
-import { Test, Question, Paragraph } from "@prisma/client";
+import { Test, Question, Part } from "@prisma/client";
 import { differenceInSeconds } from "date-fns";
 import { BarChart, ChevronRight, Timer } from "lucide-react";
 import React from "react";
@@ -24,14 +24,14 @@ type Props = {
   attemptNumber: number;
   timeStarted: Date;
   game: Test & {
-    paragraphs: (Pick<Paragraph, "id" | "content"> & {
+    parts: (Pick<Part, "id" | "content"> & {
       questions: Pick<Question, "id" | "question" | "options">[];
     })[];
   };
 };
 
 const MCQ = ({ attemptNumber, timeStarted, game }: Props) => {
-  const [paragraphIndex, setParagraphIndex] = React.useState(0);
+  const [partIndex, setpartIndex] = React.useState(0);
   const [questionIndex, setQuestionIndex] = React.useState(0);
   const [selectedChoice, setSelectedChoice] = React.useState<number>(0);
   const [correctAnswers, setCorrectAnswers] = React.useState<number>(0);
@@ -72,13 +72,13 @@ const MCQ = ({ attemptNumber, timeStarted, game }: Props) => {
     }
   }, [remainingTime, hasEnded]);
 
-  const currentParagraph = React.useMemo(
-    () => game.paragraphs[paragraphIndex],
-    [paragraphIndex, game.paragraphs]
+  const currentpart = React.useMemo(
+    () => game.parts[partIndex],
+    [partIndex, game.parts]
   );
   const currentQuestion = React.useMemo(
-    () => currentParagraph.questions[questionIndex],
-    [questionIndex, currentParagraph]
+    () => currentpart.questions[questionIndex],
+    [questionIndex, currentpart]
   );
 
   const { mutate: checkAnswer, isPending: isChecking } = useMutation({
@@ -146,12 +146,12 @@ const MCQ = ({ attemptNumber, timeStarted, game }: Props) => {
           });
           setWrongAnswers((prev) => prev + 1);
         }
-        if (questionIndex === currentParagraph.questions.length - 1) {
-          if (paragraphIndex === game.paragraphs.length - 1) {
+        if (questionIndex === currentpart.questions.length - 1) {
+          if (partIndex === game.parts.length - 1) {
             setHasEnded(true);
             return;
           }
-          setParagraphIndex((prev) => prev + 1);
+          setpartIndex((prev) => prev + 1);
           setQuestionIndex(0);
         } else {
           setQuestionIndex((prev) => prev + 1);
@@ -163,9 +163,9 @@ const MCQ = ({ attemptNumber, timeStarted, game }: Props) => {
     toast,
     isChecking,
     questionIndex,
-    currentParagraph.questions.length,
-    paragraphIndex,
-    game.paragraphs.length,
+    currentpart.questions.length,
+    partIndex,
+    game.parts.length,
   ]);
 
   React.useEffect(() => {
@@ -239,13 +239,13 @@ const MCQ = ({ attemptNumber, timeStarted, game }: Props) => {
         />
       </div>
 
-      {/* Card for Paragraph Content */}
+      {/* Card for part Content */}
       <Card className="w-full mt-4">
         <CardHeader>
-          <CardTitle>Paragraph {paragraphIndex + 1}</CardTitle>
+          <CardTitle>part {partIndex + 1}</CardTitle>
         </CardHeader>
         <CardContent>
-          <p>{currentParagraph?.content}</p>
+          <p>{currentpart?.content}</p>
         </CardContent>
       </Card>
 
@@ -255,7 +255,7 @@ const MCQ = ({ attemptNumber, timeStarted, game }: Props) => {
           <CardTitle className="mr-5 text-center divide-y divide-zinc-600/50">
             <div>Question {questionIndex + 1}</div>
             <div className="text-base text-slate-400">
-              {currentParagraph?.questions.length}
+              {currentpart?.questions.length}
             </div>
           </CardTitle>
           <CardDescription className="flex-grow text-lg">

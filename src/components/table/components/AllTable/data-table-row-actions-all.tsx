@@ -6,6 +6,9 @@ import { ResponsiveDialog } from "@/components/forms/responsive-dialog";
 import { useState } from "react";
 import DeleteUser from "@/components/forms/DeleteUser";
 import DropdownCRUD from "@/components/dropdownmenu/DropdownCRUD";
+import { EditLecturer } from "@/components/forms/EditLecturer";
+import { EditStudent } from "@/components/forms/EditStudent";
+
 interface User {
   id: string;
   name: string;
@@ -24,8 +27,9 @@ export function DataTableRowActions<
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
 
-  // Accessing userName from row.original
+  // Accessing userName and role from row.original
   const userName = row.original?.userName || "Unknown"; // Fallback to "Unknown" if userName doesn't exist
+  const role = row.original?.role || "Unknown"; // Fallback to "Unknown" if role doesn't exist
 
   return (
     <>
@@ -48,7 +52,22 @@ export function DataTableRowActions<
         setIsOpen={setIsEditOpen}
         title="Edit User"
       >
-        <>Editing user {userName}</>
+        {/* Render EditStudent or EditLecturer based on role */}
+        {role === "STUDENT" ? (
+          <EditStudent
+            userName={userName}
+            setIsOpen={setIsEditOpen}
+            onEditSuccess={() => console.log("Student edited")}
+          />
+        ) : role === "LECTURER" ? (
+          <EditLecturer
+            userName={userName}
+            setIsOpen={setIsEditOpen}
+            onEditSuccess={() => console.log("Lecturer edited")}
+          />
+        ) : (
+          <p>Role not supported</p>
+        )}
       </ResponsiveDialog>
 
       <DropdownCRUD

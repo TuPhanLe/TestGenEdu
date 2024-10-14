@@ -7,6 +7,7 @@ datasource db {
   url          = env("DATABASE_URL")
   relationMode = "prisma"
 }
+
 model Account {
   id                String  @id @default(cuid())
   userId            String
@@ -52,7 +53,6 @@ enum LabelQuestion {
 }
 enum TestType {
   mcq
-  open_ended
   true_false
   matching
   fillup
@@ -69,9 +69,9 @@ model User {
   password        String
   role            UserRole     @default(STUDENT)
   status          UserStatus   @default(ACTIVE)
-  studentId       String?      // Student ID (optional, relevant if the role is STUDENT)
-  class           String?      // Class (optional, relevant if the role is STUDENT)
-  department      String?      // Department (optional, relevant if the role is STUDENT)
+  studentId       String?      
+  class           String?      
+  department      String?      
   accounts        Account[]
   sessions        Session[]
   createdTests    Test[]       @relation("CreatedTests")
@@ -80,20 +80,20 @@ model User {
   TestResult      TestResult[]
   supervisedClasses Class[]   @relation("SupervisedClasses")
   classes         UserClass[]
-  createdAt       DateTime    @default(now())  // Thêm trường createdAt
-  @@index([role]) // Index for filtering users by role
+  createdAt       DateTime    @default(now())  
+  @@index([role])
 }
-
 
 model Class {
   id            String   @id @default(cuid())
-  name          String   // Tên lớp
-  supervisorId  String?  // ID giáo viên phụ trách (có thể null nếu chưa có giáo viên)
+  name          String   
+  supervisorId  String?  
   supervisor    User?    @relation("SupervisedClasses", fields: [supervisorId], references: [id])
-  students      UserClass[] // Mối quan hệ nhiều-nhiều qua bảng UserClass
-  createdAt     DateTime    @default(now())  // Thêm trường createdAt
-  @@index([supervisorId]) // Thêm chỉ mục vào supervisorId
+  students      UserClass[] 
+  createdAt     DateTime    @default(now())  
+  @@index([supervisorId])
 }
+
 model UserClass {
   id        String @id @default(cuid())
   userId    String
@@ -101,9 +101,9 @@ model UserClass {
   user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   class     Class  @relation(fields: [classId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, classId]) // Đảm bảo không có trùng lặp
-  @@index([userId])  // Thêm chỉ mục vào userId
-  @@index([classId]) // Thêm chỉ mục vào classId
+  @@unique([userId, classId]) 
+  @@index([userId])  
+  @@index([classId])
 }
 
 model Folder {
@@ -126,14 +126,14 @@ model Test {
   topic           String
   timeEnded       DateTime?
   createdAt       DateTime    @default(now())
-  paragraphs      Paragraph[]
+  parts           Part[]
   questions       Question[]
   testType        TestType
   creator         User        @relation("CreatedTests", fields: [creatorId], references: [id], onDelete: Cascade)
   folder          Folder?     @relation(fields: [folderId], references: [id], onDelete: SetNull)
   accessibleBy    TestAccess[]
-  testDuration    Int?        @default(60)// Duration of the test in minutes
-  attemptsAllowed Int?        @default(1)// Number of allowed attempts (new field)
+  testDuration    Int?        @default(60)
+  attemptsAllowed Int?        @default(1)
   TestResult      TestResult[]
 
   @@index([creatorId], name: "creatorId")
@@ -150,14 +150,15 @@ model TestAccess {
   user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([testId, userId])
-  @@index([testId]) // Manual index to optimize queries by testId
-  @@index([userId]) // Manual index to optimize queries by userId
+  @@index([testId])
+  @@index([userId])
 }
 
-model Paragraph {
+model Part {
   id        String     @id @default(cuid())
   testId    String
   content   String     @db.Text
+  testType  TestType   // Thêm trường testType
   questions Question[]
   test      Test       @relation(fields: [testId], references: [id], onDelete: Cascade)
 
@@ -169,18 +170,18 @@ model Question {
   question          String
   answer            String
   testId            String?
-  paragraphId       String?
+  partId            String?     // Đổi tên từ paragraphId thành partId
   options           Json?
   percentageCorrect Float?
   questionType      TestType?
   userAnswer        String?
   isCorrect         Boolean?
   test              Test?      @relation(fields: [testId], references: [id], onDelete: Cascade)
-  paragraph         Paragraph? @relation(fields: [paragraphId], references: [id], onDelete: Cascade)
+  part              Part?      @relation(fields: [partId], references: [id], onDelete: Cascade)
 
-  @@unique([question, paragraphId])
+  @@unique([question, partId])
   @@index([testId], name: "testId")
-  @@index([paragraphId], name: "paragraphId")
+  @@index([partId], name: "partId")  // Đổi tên từ paragraphId sang partId
 }
 
 model TestResult {
@@ -193,13 +194,13 @@ model TestResult {
   passed         Boolean  @default(false)
   studentAnswers Json     @db.Json
   feedback       String?  @db.Text
-  startTime      DateTime // Start time of the test
-  endTime        DateTime? // End time of the test
+  startTime      DateTime 
+  endTime        DateTime? 
   test           Test     @relation(fields: [testId], references: [id], onDelete: Cascade)
   student        User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  attemptNumber  Int       @default(0) // New field: number of attempts made by the student
+  attemptNumber  Int       @default(0)
 
-  @@unique([testId, studentId, attemptNumber]) // Updated unique constraint to track attempts
+  @@unique([testId, studentId, attemptNumber])
   @@index([testId])
   @@index([studentId])
 }

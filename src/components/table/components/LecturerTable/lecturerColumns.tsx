@@ -6,7 +6,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 
 import { DataTableColumnHeader } from "../data-table-column-header";
 import { DataTableRowActions } from "../AllTable/data-table-row-actions-all";
-import { Lecturer } from "@/schemas/form/Columns/lecturerColumns";
+import { Lecturer } from "@/schemas/form/Columns/lecturerColumn";
 
 export const lecturerColumns: ColumnDef<Lecturer>[] = [
   {

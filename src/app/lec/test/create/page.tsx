@@ -2,7 +2,7 @@ import React from "react";
 import { getAuthSession } from "@/lib/nextauth";
 import { redirect } from "next/navigation";
 import { UserRole } from "@prisma/client";
-import CreateTest from "@/components/forms/CreateTest";
+import CreateTest from "@/components/forms/Test/CreateTest";
 export const metadata = {
   title: "TEST GEN EDU | DNU",
   description: "Let's make a Quiz!",

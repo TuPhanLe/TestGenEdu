@@ -1,14 +1,11 @@
 import { z } from "zod";
 
-export const lectureSchema = z.object({
-  name: z
-    .string()
-    .min(1, { message: "Name must be at least 1 character long" }),
-  userName: z
-    .string()
-    .min(1, { message: "User Name must be at least 1 character long" }),
+export const lectureColumnsSchema = z.object({
+  name: z.string(),
+  userName: z.string(),
+  password: z.string(),
   email: z.string().optional(),
   status: z.string(),
 });
 
-export type Lecturer = z.infer<typeof lectureSchema>;
+export type Lecturer = z.infer<typeof lectureColumnsSchema>;

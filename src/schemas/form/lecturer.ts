@@ -7,9 +7,7 @@ export const lecturerSchema = z.object({
   userName: z
     .string()
     .min(1, { message: "User Name must be at least 1 character long" }),
-  password: z
-    .string()
-    .min(8, { message: "Password must be at least 8 character long" }),
+  password: z.string(),
   email: z.string().optional(),
   status: z.string(),
 });

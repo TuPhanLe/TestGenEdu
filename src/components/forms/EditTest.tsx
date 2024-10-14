@@ -20,7 +20,7 @@ import {
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { Textarea } from "../ui/textarea";
-import { Paragraph, Question, Test } from "@prisma/client";
+import { Part, Question, Test } from "@prisma/client";
 import cuid from "cuid";
 import { Separator } from "../ui/separator";
 
@@ -31,7 +31,7 @@ import { CopyClipboard } from "../ui/copy-clipboard";
 
 type Props = {
   test: Test & {
-    paragraphs: (Pick<Paragraph, "id" | "content"> & {
+    parts: (Pick<Part, "id" | "content"> & {
       questions: Pick<Question, "id" | "question" | "options" | "answer">[];
     })[];
   };
@@ -51,7 +51,7 @@ const EditTest = ({ test }: Props) => {
       type,
       testDuration,
       attemptsAllowed,
-      paragraphs,
+      parts,
     }: Input) => {
       try {
         const response = await axios.put("/api/test/update", {
@@ -60,7 +60,7 @@ const EditTest = ({ test }: Props) => {
           type,
           testDuration,
           attemptsAllowed,
-          paragraphs,
+          parts,
         });
         return response.data;
       } catch (error) {
@@ -78,9 +78,9 @@ const EditTest = ({ test }: Props) => {
       topic: test.topic,
       type: test.testType,
       attemptsAllowed: test.attemptsAllowed || 1,
-      paragraphs: test.paragraphs.map((p) => ({
-        paragraph: p.content,
-        paragraphId: p.id,
+      parts: test.parts.map((p) => ({
+        part: p.content,
+        partId: p.id,
         questions: p.questions.map((q) => ({
           questionId: q.id,
           question: q.question,
@@ -95,17 +95,17 @@ const EditTest = ({ test }: Props) => {
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
-    name: "paragraphs",
+    name: "parts",
   });
 
-  const [expandedParagraphs, setExpandedParagraphs] = useState<string[]>([]);
+  const [expandedparts, setExpandedparts] = useState<string[]>([]);
   const [expandedQuestions, setExpandedQuestions] = useState<string[]>([]);
 
-  const toggleExpandParagraph = (paragraphId: string) => {
-    setExpandedParagraphs((prev) =>
-      prev.includes(paragraphId)
-        ? prev.filter((id) => id !== paragraphId)
-        : [...prev, paragraphId]
+  const toggleExpandpart = (partId: string) => {
+    setExpandedparts((prev) =>
+      prev.includes(partId)
+        ? prev.filter((id) => id !== partId)
+        : [...prev, partId]
     );
   };
   const toggleExpandQuestions = (questionId: string) => {
@@ -116,8 +116,8 @@ const EditTest = ({ test }: Props) => {
     );
   };
   const handleAddQuestion = (index: number) => {
-    const currentQuestions = form.getValues(`paragraphs.${index}.questions`);
-    form.setValue(`paragraphs.${index}.questions`, [
+    const currentQuestions = form.getValues(`parts.${index}.questions`);
+    form.setValue(`parts.${index}.questions`, [
       ...currentQuestions,
       { questionId: cuid(), question: "", answer: "", options: ["", "", ""] },
     ]);
@@ -125,12 +125,10 @@ const EditTest = ({ test }: Props) => {
   };
 
   const handleRemoveQuestion = (paraIndex: number, qIndex: number) => {
-    const currentQuestions = form.getValues(
-      `paragraphs.${paraIndex}.questions`
-    );
+    const currentQuestions = form.getValues(`parts.${paraIndex}.questions`);
     if (currentQuestions.length > 1) {
       form.setValue(
-        `paragraphs.${paraIndex}.questions`,
+        `parts.${paraIndex}.questions`,
         currentQuestions.filter((_, i) => i !== qIndex)
       );
       setAddQuestionBut((prevState) => !prevState);
@@ -138,10 +136,10 @@ const EditTest = ({ test }: Props) => {
       alert("You must have at least 1 question");
     }
   };
-  const handleAddParagraph = () => {
-    const newParagraph = {
-      paragraphId: cuid(),
-      paragraph: "",
+  const handleAddpart = () => {
+    const newpart = {
+      partId: cuid(),
+      part: "",
       questions: [
         {
           questionId: cuid(),
@@ -151,17 +149,17 @@ const EditTest = ({ test }: Props) => {
         },
       ],
     };
-    append(newParagraph);
-    setExpandedParagraphs((prev) => [...prev, newParagraph.paragraphId]);
+    append(newpart);
+    setExpandedparts((prev) => [...prev, newpart.partId]);
   };
-  const handleRemoveParagraph = (index: number) => {
+  const handleRemovepart = (index: number) => {
     if (fields.length > 1) {
-      remove(index); // Remove the paragraph at the given index
-      setExpandedParagraphs((prev) =>
-        prev.filter((id) => id !== fields[index].paragraphId)
+      remove(index); // Remove the part at the given index
+      setExpandedparts((prev) =>
+        prev.filter((id) => id !== fields[index].partId)
       );
     } else {
-      alert("You must have at least 1 paragraph");
+      alert("You must have at least 1 part");
     }
   };
 
@@ -246,12 +244,12 @@ const EditTest = ({ test }: Props) => {
               )}
             />
             {fields.map((item, index) => (
-              <Card key={item.paragraphId} className="mb-4">
+              <Card key={item.partId} className="mb-4">
                 <CardHeader className="flex ">
                   <CardTitle className="text-2xl font-bold flex justify-between items-center">
                     {/* Clickable Part Text */}
                     <span
-                      onClick={() => toggleExpandParagraph(item.paragraphId)}
+                      onClick={() => toggleExpandpart(item.partId)}
                       className="cursor-pointer"
                     >
                       Part {index + 1}
@@ -259,22 +257,22 @@ const EditTest = ({ test }: Props) => {
 
                     {/* Dropdown Menu */}
                     <DropdownCRUD
-                      edit={() => toggleExpandParagraph(item.paragraphId)}
-                      delete={() => handleRemoveParagraph(index)}
+                      edit={() => toggleExpandpart(item.partId)}
+                      delete={() => handleRemovepart(index)}
                     />
                   </CardTitle>
                 </CardHeader>
-                {expandedParagraphs.includes(item.paragraphId) && (
+                {expandedparts.includes(item.partId) && (
                   <CardContent>
                     <FormField
                       control={form.control}
-                      name={`paragraphs.${index}.paragraph`}
+                      name={`parts.${index}.part`}
                       render={({ field }) => (
                         <FormItem>
                           <FormControl>
                             <Textarea
                               className="w-full h-48"
-                              placeholder="Enter a paragraph ..."
+                              placeholder="Enter a part ..."
                               {...field}
                             />
                           </FormControl>
@@ -286,7 +284,7 @@ const EditTest = ({ test }: Props) => {
                       )}
                     />
                     {form
-                      .getValues(`paragraphs.${index}.questions`)
+                      .getValues(`parts.${index}.questions`)
                       .map((question, qIndex) => (
                         <Card
                           key={question.questionId}
@@ -318,7 +316,7 @@ const EditTest = ({ test }: Props) => {
                             <CardContent>
                               <FormField
                                 control={form.control}
-                                name={`paragraphs.${index}.questions.${qIndex}.question`}
+                                name={`parts.${index}.questions.${qIndex}.question`}
                                 render={({ field }) => (
                                   <FormItem>
                                     <FormLabel>Question</FormLabel>
@@ -334,7 +332,7 @@ const EditTest = ({ test }: Props) => {
                               />
                               <FormField
                                 control={form.control}
-                                name={`paragraphs.${index}.questions.${qIndex}.answer`}
+                                name={`parts.${index}.questions.${qIndex}.answer`}
                                 render={({ field }) => (
                                   <FormItem>
                                     <FormLabel>Answer</FormLabel>
@@ -352,7 +350,7 @@ const EditTest = ({ test }: Props) => {
                                 <FormField
                                   key={optIndex}
                                   control={form.control}
-                                  name={`paragraphs.${index}.questions.${qIndex}.options.${optIndex}`}
+                                  name={`parts.${index}.questions.${qIndex}.options.${optIndex}`}
                                   render={({ field }) => (
                                     <FormItem>
                                       <FormLabel>
@@ -376,7 +374,7 @@ const EditTest = ({ test }: Props) => {
                                   type="button"
                                   onClick={() =>
                                     form.setValue(
-                                      `paragraphs.${index}.questions.${qIndex}.options`,
+                                      `parts.${index}.questions.${qIndex}.options`,
                                       [...question.options, ""]
                                     )
                                   }
@@ -415,7 +413,7 @@ const EditTest = ({ test }: Props) => {
       </div>
       <div className="fixed top-[20%] right-20 p-4">
         <FamilyPopoverMenu
-          add={handleAddParagraph}
+          add={handleAddpart}
           share={() => {
             setIsShareLinkOpen(true);
           }}

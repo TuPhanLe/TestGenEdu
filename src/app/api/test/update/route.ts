@@ -16,14 +16,13 @@ export const PUT = async (req: Request) => {
     }
 
     const body = await req.json();
-    const { testId, topic, type, testDuration, attemptsAllowed, paragraphs } =
+    const { testId, topic, type, testDuration, attemptsAllowed, parts } =
       testSchema.parse(body);
-    console.log(body);
 
     const existingTest = await prisma.test.findUnique({
       where: { id: testId, creatorId: session.user.id },
       include: {
-        paragraphs: {
+        parts: {
           include: {
             questions: true,
           },
@@ -49,18 +48,18 @@ export const PUT = async (req: Request) => {
 
     // Cập nhật đoạn văn và câu hỏi
     await Promise.all(
-      paragraphs.map(async (paragraph) => {
-        const existingParagraph = await prisma.paragraph.upsert({
-          where: { id: paragraph.paragraphId },
-          update: { content: paragraph.paragraph },
+      parts.map(async (part) => {
+        const existingpart = await prisma.part.upsert({
+          where: { id: part.partId },
+          update: { content: part.part },
           create: {
             testId: testId,
-            content: paragraph.paragraph,
+            content: part.part,
           },
         });
 
         await Promise.all(
-          paragraph.questions.map(async (question) => {
+          part.questions.map(async (question) => {
             question.options.push(question.answer);
             const options = question.options.sort(() => Math.random() - 0.5);
 
@@ -71,7 +70,7 @@ export const PUT = async (req: Request) => {
                 answer: question.answer,
                 options: JSON.stringify(options),
                 questionType: type,
-                paragraphId: existingParagraph.id,
+                partId: existingpart.id,
                 testId: testId,
               },
               create: {
@@ -79,7 +78,7 @@ export const PUT = async (req: Request) => {
                 answer: question.answer,
                 options: JSON.stringify(options),
                 questionType: type,
-                paragraphId: existingParagraph.id,
+                partId: existingpart.id,
                 testId: testId,
               },
             });

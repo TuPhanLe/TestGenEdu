@@ -32,7 +32,7 @@ const EditPage = async ({ params: { id } }: Props) => {
       id: id,
     },
     include: {
-      paragraphs: {
+      parts: {
         select: {
           id: true,
           content: true,

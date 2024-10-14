@@ -8,7 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { DataTableColumnHeader } from "../data-table-column-header";
 import { DataTableRowActions } from "../AllTable/data-table-row-actions-all";
 import { priorities, statuses } from "../data";
-import { Student } from "@/schemas/form/Columns/studentColumns";
+import { Student } from "@/schemas/form/Columns/studentColumn";
 
 export const studentColumns: ColumnDef<Student>[] = [
   {

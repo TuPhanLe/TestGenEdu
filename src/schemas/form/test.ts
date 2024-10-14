@@ -1,24 +1,27 @@
 import { z } from "zod";
-
 const questionSchema = z.object({
   questionId: z.string(),
   question: z
     .string()
     .min(1, { message: "Question must be at least 1 character long" }),
-  answer: z
-    .string()
-    .min(1, { message: "Answer must be at least 1 character long" }),
-  options: z.array(
-    z.string().min(1, { message: "Option must be at least 1 character long" })
-  ),
+  answer: z.union([
+    z.string().min(1, { message: "Answer must be at least 1 character long" }), // For other question types
+    z.enum(["true", "false"]), // For true_false questions
+  ]),
+  options: z
+    .array(
+      z.string().min(1, { message: "Option must be at least 1 character long" })
+    )
+    .optional(), // Make options optional
 });
 
-const paragraphSchema = z.object({
-  paragraphId: z.string(),
-  paragraph: z
+const partSchema = z.object({
+  partId: z.string(),
+  part: z
     .string()
-    .min(4, { message: "Paragraph must be at least 4 characters long" }),
+    .min(4, { message: "Part must be at least 4 characters long" }),
   questions: z.array(questionSchema),
+  type: z.enum(["mcq", "true_false", "matching", "fillup", "rewrite"]),
 });
 
 // Define the main schema with testDuration
@@ -34,15 +37,7 @@ export const testSchema = z.object({
     .string()
     .min(4, { message: "Topic must be at least 4 characters long" })
     .max(50, { message: "Topic must be no more than 50 characters long" }),
-  type: z.enum([
-    "mcq",
-    "open_ended",
-    "true_false",
-    "matching",
-    "fillup",
-    "rewrite",
-  ]),
   testDuration: z.coerce.number().int().positive(), // Duration of the test in minutes
   attemptsAllowed: z.coerce.number().int().positive(),
-  paragraphs: z.array(paragraphSchema),
+  parts: z.array(partSchema),
 });

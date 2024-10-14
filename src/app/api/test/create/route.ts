@@ -24,7 +24,7 @@ export const POST = async (req: Request) => {
       attemptsAllowed,
       type,
       folderId,
-      paragraphs,
+      parts,
     } = testSchema.parse(body);
     console.log(body);
 
@@ -50,34 +50,34 @@ export const POST = async (req: Request) => {
       },
     });
 
-    // Process paragraphs and questions
-    const paragraphData = await Promise.all(
-      paragraphs.map(async (paragraph) => {
-        const createdParagraph = await prisma.paragraph.upsert({
-          where: { id: paragraph.paragraphId }, // Check if paragraph exists
+    // Process parts and questions
+    const partData = await Promise.all(
+      parts.map(async (part) => {
+        const createdpart = await prisma.part.upsert({
+          where: { id: part.partId }, // Check if part exists
           update: {
-            content: paragraph.paragraph,
+            content: part.part,
             testId: test.id,
           },
           create: {
-            id: paragraph.paragraphId,
-            content: paragraph.paragraph,
+            id: part.partId,
+            content: part.part,
             testId: test.id,
           },
         });
 
-        // Return paragraph ID and questions for further processing
+        // Return part ID and questions for further processing
         return {
-          paragraphId: createdParagraph.id,
-          questions: paragraph.questions,
+          partId: createdpart.id,
+          questions: part.questions,
         };
       })
     );
 
     // Process questions and their options
     const questionData = await Promise.all(
-      paragraphData.flatMap((paragraph) =>
-        paragraph.questions.map((question) => {
+      partData.flatMap((part) =>
+        part.questions.map((question) => {
           // Add the correct answer to the options array and shuffle them
           const allOptions = [...question.options, question.answer];
           const shuffledOptions = allOptions.sort(() => Math.random() - 0.5);
@@ -89,7 +89,7 @@ export const POST = async (req: Request) => {
               answer: question.answer,
               options: JSON.stringify(shuffledOptions), // Store options as a JSON string
               questionType: type,
-              paragraphId: paragraph.paragraphId,
+              partId: part.partId,
               testId: test.id,
             },
             create: {
@@ -98,7 +98,7 @@ export const POST = async (req: Request) => {
               answer: question.answer,
               options: JSON.stringify(shuffledOptions),
               questionType: type,
-              paragraphId: paragraph.paragraphId,
+              partId: part.partId,
               testId: test.id,
             },
           });
