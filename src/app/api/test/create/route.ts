@@ -17,115 +17,97 @@ export const POST = async (req: Request) => {
 
     // Parse and validate the request body
     const body = await req.json();
-    const {
-      testId,
-      topic,
-      testDuration,
-      attemptsAllowed,
-      type,
-      folderId,
-      parts,
-    } = testSchema.parse(body);
+    const { testId, topic, testDuration, attemptsAllowed, folderId, parts } =
+      testSchema.parse(body);
+
     console.log(body);
 
-    // Upsert the test in the database
-    const test = await prisma.test.upsert({
-      where: { id: testId }, // Check if a test with this ID exists
-      update: {
-        testType: type,
-        creatorId: session.user.id,
-        topic,
-        testDuration,
-        attemptsAllowed,
-        folderId, // Include the folderId in the update operation
-      },
-      create: {
+    // Create the test in the database
+    const test = await prisma.test.create({
+      data: {
         id: testId,
-        testType: type,
         creatorId: session.user.id,
         topic,
         testDuration,
         attemptsAllowed,
-        folderId, // Include the folderId in the create operation
+        folderId,
       },
     });
 
     // Process parts and questions
     const partData = await Promise.all(
       parts.map(async (part) => {
-        const createdpart = await prisma.part.upsert({
-          where: { id: part.partId }, // Check if part exists
-          update: {
-            content: part.part,
-            testId: test.id,
-          },
-          create: {
+        const createdPart = await prisma.part.create({
+          data: {
             id: part.partId,
-            content: part.part,
+            content: part.paragraph || "", // Optional paragraph field
+            testType: part.type,
             testId: test.id,
           },
         });
 
-        // Return part ID and questions for further processing
-        return {
-          partId: createdpart.id,
-          questions: part.questions,
-        };
+        // Process questions based on part type
+        const questionData = await Promise.all(
+          part.questions.map(async (question) => {
+            // Kiểm tra xem câu hỏi đã tồn tại trong phần đó chưa
+            const existingQuestion = await prisma.question.findFirst({
+              where: {
+                question: question.question,
+                partId: createdPart.id,
+              },
+            });
+
+            if (!existingQuestion) {
+              // Nếu câu hỏi chưa tồn tại, tạo mới
+              let allOptions = question.options || [];
+              if (question.answer && part.type !== "true_false") {
+                allOptions = [...allOptions]; // For other types, options are provided
+              }
+
+              return prisma.question.create({
+                data: {
+                  id: question.questionId,
+                  question: question.question || "", // Optional for Fill in the Blanks
+                  answer: question.answer,
+                  options: allOptions.length
+                    ? JSON.stringify(allOptions)
+                    : undefined, // Optional for types without options
+                  questionType: part.type,
+                  partId: createdPart.id,
+                  testId: test.id,
+                },
+              });
+            } else {
+              console.warn(
+                `Question "${question.question}" already exists in part ${createdPart.id}`
+              );
+              return null;
+            }
+          })
+        );
+
+        return questionData.filter((q) => q !== null); // Chỉ trả về các câu hỏi mới
       })
     );
 
-    // Process questions and their options
-    const questionData = await Promise.all(
-      partData.flatMap((part) =>
-        part.questions.map((question) => {
-          // Add the correct answer to the options array and shuffle them
-          const allOptions = [...question.options, question.answer];
-          const shuffledOptions = allOptions.sort(() => Math.random() - 0.5);
-
-          return prisma.question.upsert({
-            where: { id: question.questionId }, // Check if question exists
-            update: {
-              question: question.question,
-              answer: question.answer,
-              options: JSON.stringify(shuffledOptions), // Store options as a JSON string
-              questionType: type,
-              partId: part.partId,
-              testId: test.id,
-            },
-            create: {
-              id: question.questionId,
-              question: question.question,
-              answer: question.answer,
-              options: JSON.stringify(shuffledOptions),
-              questionType: type,
-              partId: part.partId,
-              testId: test.id,
-            },
-          });
-        })
-      )
-    );
-
-    // Await all question upserts
-    await Promise.all(questionData);
+    // Await all part creates
+    await Promise.all(partData.flat());
 
     // Return a successful response with test details
     return NextResponse.json(
       {
         gameId: test.id,
         creatorId: test.creatorId,
-        folderId: test.folderId, // Return folderId in response
+        folderId: test.folderId,
       },
       { status: 200 }
     );
   } catch (error) {
-    console.error("Error creating or updating test:", error);
+    console.error("Error creating test:", error);
 
     if (error instanceof ZodError) {
-      // Handle validation errors
       return NextResponse.json({ error: error.issues }, { status: 400 });
     } else {
-      // Handle internal server errors
       return NextResponse.json(
         { error: "Internal Server Error" },
         { status: 500 }

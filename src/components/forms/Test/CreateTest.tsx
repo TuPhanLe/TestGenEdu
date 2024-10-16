@@ -20,24 +20,91 @@ const CreateTest = ({ folderId }: { folderId?: string }) => {
     resolver: zodResolver(testSchema),
     defaultValues: {
       testId: cuid(),
-      topic: "Semester",
+      topic: "Semester Test",
       testDuration: 60,
       attemptsAllowed: 1,
       parts: [
+        // Multiple Choice Question (MCQ)
         {
           partId: cuid(),
-          part: "In the heart of the Amazon rainforest...",
+          paragraph: "In the heart of the Amazon rainforest...",
           type: "mcq",
           questions: [
             {
               questionId: cuid(),
-              question: "What is the main focus of the text?",
+              question: " question",
               answer: "The biodiversity of the Amazon rainforest",
               options: [
                 "The mysteries of the ocean",
                 "The history of ancient civilizations",
                 "The exploration of outer space",
               ],
+            },
+          ],
+        },
+        // True/False Question
+        {
+          partId: cuid(),
+          paragraph: "In the heart of the Amazon rainforest...",
+          type: "true_false",
+          questions: [
+            {
+              questionId: cuid(),
+              question: " question",
+              answer: "false",
+              options: [], // Không cần options cho câu hỏi True/False
+            },
+          ],
+        },
+        // Matching Question
+        {
+          partId: cuid(),
+          paragraph: "Match the animals to their correct habitat.",
+          type: "matching",
+          questions: [
+            {
+              questionId: cuid(),
+              question: " question",
+              answer: "Jaguar, Sloth, Macaw",
+              options: ["Polar bear", "Penguin", "Camel"], // Distractors
+            },
+          ],
+        },
+        // Fill in the Blanks Question (Không có question, chỉ có answer và options)
+        {
+          partId: cuid(),
+          paragraph:
+            "The [_____] rainforest is the largest [_____] on Earth and plays a critical role in [_____].", // Đoạn văn có 3 lỗ trống
+          type: "fillup",
+          questions: [
+            {
+              questionId: cuid(), // Lỗ trống đầu tiên
+              answer: "Amazon", // Đáp án cho lỗ trống đầu tiên
+              options: ["Savanna", "Desert", "Sahara"], // Các lựa chọn không bao gồm đáp án đúng
+            },
+            {
+              questionId: cuid(), // Lỗ trống thứ hai
+              answer: "forest", // Đáp án cho lỗ trống thứ hai
+              options: ["ocean", "grassland", "Sahara"], // Các lựa chọn không bao gồm đáp án đúng
+            },
+            {
+              questionId: cuid(), // Lỗ trống thứ ba
+              answer: "climate regulation", // Đáp án cho lỗ trống thứ ba
+              options: ["carbon storage", "water cycle", "Sahara"], // Các lựa chọn không bao gồm đáp án đúng
+            },
+          ],
+        },
+        // Rewrite Question
+        {
+          partId: cuid(),
+          paragraph: "", // No paragraph for rewrite type
+          type: "rewrite",
+          questions: [
+            {
+              question: " question",
+              questionId: cuid(),
+              answer: "The rainforest in the Amazon covers a large area.",
+              options: [], // No options for rewrite questions
             },
           ],
         },
@@ -50,22 +117,23 @@ const CreateTest = ({ folderId }: { folderId?: string }) => {
     name: "parts",
   });
 
-  // const { mutate: createTest } = useMutation({
-  //   mutationFn: async (input: any) => {
-  //     try {
-  //       const response = await axios.post("/api/test/create", input);
-  //       return response.data;
-  //     } catch (error) {
-  //       console.error("Error:", error);
-  //       throw error;
-  //     }
-  //   },
-  // });
+  const { mutate: createTest, isPending } = useMutation({
+    mutationFn: async (input: any) => {
+      const response = await axios.post("/api/test/create", input);
+      return response.data;
+    },
+    onSuccess: () => {
+      alert("Test created successfully!");
+      form.reset(); // Reset the form on success
+    },
+    onError: (error) => {
+      console.error("Error:", error);
+      alert("Failed to create the test. Please try again.");
+    },
+  });
 
   const onSubmit = (data: any) => {
-    console.log(data);
-
-    // createTest(data);
+    createTest(data);
   };
 
   return (
@@ -96,12 +164,12 @@ const CreateTest = ({ folderId }: { folderId?: string }) => {
                       : [...prev, questionId]
                   )
                 }
-                removePart={() => remove(index)} // Truyền hàm remove vào Part
+                removePart={() => remove(index)}
               />
             ))}
 
-            <Button type="submit" className="w-full">
-              Submit
+            <Button type="submit" className="w-full" disabled={isPending}>
+              {isPending ? "Submitting..." : "Submit"}
             </Button>
           </form>
           <div className="fixed top-[20%] right-20 p-4">
@@ -109,7 +177,7 @@ const CreateTest = ({ folderId }: { folderId?: string }) => {
               add={() =>
                 append({
                   partId: cuid(),
-                  part: "",
+                  paragraph: "",
                   type: "matching",
                   questions: [],
                 })

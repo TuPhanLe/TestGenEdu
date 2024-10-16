@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
-import { testSchema } from "@/schemas/form/test";
-
 import { ZodError } from "zod";
 import { getAuthSession } from "@/lib/nextauth";
 import { prisma } from "@/lib/db";
+import { testSchema } from "@/schemas/form/test";
 
 export const PUT = async (req: Request) => {
   try {
+    // Lấy thông tin người dùng từ session
     const session = await getAuthSession();
     if (!session?.user) {
       return NextResponse.json(
@@ -15,80 +15,105 @@ export const PUT = async (req: Request) => {
       );
     }
 
+    // Parse và validate dữ liệu từ body request
     const body = await req.json();
-    const { testId, topic, type, testDuration, attemptsAllowed, parts } =
+    const { testId, topic, testDuration, attemptsAllowed, folderId, parts } =
       testSchema.parse(body);
-
-    const existingTest = await prisma.test.findUnique({
-      where: { id: testId, creatorId: session.user.id },
-      include: {
-        parts: {
-          include: {
-            questions: true,
-          },
-        },
-      },
-    });
-
-    if (!existingTest) {
-      return NextResponse.json(
-        {
-          error:
-            "Test not found or you do not have permission to update this test",
-        },
-        { status: 404 }
-      );
-    }
 
     // Cập nhật thông tin bài kiểm tra
     const updatedTest = await prisma.test.update({
       where: { id: testId },
-      data: { topic, testType: type, testDuration, attemptsAllowed },
+      data: {
+        topic,
+        testDuration,
+        attemptsAllowed,
+        folderId,
+        creatorId: session.user.id,
+      },
     });
 
-    // Cập nhật đoạn văn và câu hỏi
-    await Promise.all(
-      parts.map(async (part) => {
-        const existingpart = await prisma.part.upsert({
-          where: { id: part.partId },
-          update: { content: part.part },
-          create: {
-            testId: testId,
-            content: part.part,
-          },
-        });
+    // Lấy tất cả các `part` và `question` hiện tại từ DB
+    const existingParts = await prisma.part.findMany({
+      where: { testId },
+      include: { questions: true },
+    });
 
-        await Promise.all(
-          part.questions.map(async (question) => {
-            question.options.push(question.answer);
-            const options = question.options.sort(() => Math.random() - 0.5);
-
-            await prisma.question.upsert({
-              where: { id: question.questionId },
-              update: {
-                question: question.question,
-                answer: question.answer,
-                options: JSON.stringify(options),
-                questionType: type,
-                partId: existingpart.id,
-                testId: testId,
-              },
-              create: {
-                question: question.question,
-                answer: question.answer,
-                options: JSON.stringify(options),
-                questionType: type,
-                partId: existingpart.id,
-                testId: testId,
-              },
-            });
-          })
-        );
-      })
+    // **Bước 1: Xóa các phần (part) và câu hỏi (question) đã bị xóa trên frontend**
+    const partIdsFromFrontend = parts.map((part) => part.partId);
+    const partsToDelete = existingParts.filter(
+      (existingPart) => !partIdsFromFrontend.includes(existingPart.id)
     );
 
+    const deletePartPromises = partsToDelete.map((part) =>
+      prisma.part.delete({ where: { id: part.id } })
+    );
+
+    // **Xóa các câu hỏi đã bị xóa trong từng phần**
+    const deleteQuestionPromises = existingParts.flatMap((part) => {
+      const questionIdsFromFrontend =
+        parts
+          .find((p) => p.partId === part.id)
+          ?.questions.map((q) => q.questionId) || [];
+
+      return part.questions
+        .filter((q) => !questionIdsFromFrontend.includes(q.id))
+        .map((q) => prisma.question.delete({ where: { id: q.id } }));
+    });
+
+    await Promise.all([...deletePartPromises, ...deleteQuestionPromises]);
+
+    // **Bước 2: Upsert các phần và câu hỏi từ frontend**
+    const partPromises = parts.map(async (part) => {
+      const updatedPart = await prisma.part.upsert({
+        where: { id: part.partId },
+        update: {
+          content: part.paragraph || "",
+          testType: part.type,
+          testId: updatedTest.id,
+        },
+        create: {
+          id: part.partId,
+          content: part.paragraph || "",
+          testType: part.type,
+          testId: updatedTest.id,
+        },
+      });
+
+      const questionPromises = part.questions.map((question) =>
+        prisma.question.upsert({
+          where: { id: question.questionId },
+          update: {
+            question: question.question || "",
+            answer: question.answer,
+            options: question.options ? JSON.stringify(question.options) : "[]",
+            questionType: part.type,
+            partId: updatedPart.id,
+            testId: updatedTest.id,
+          },
+          create: {
+            id: question.questionId,
+            question: question.question || "",
+            answer: question.answer,
+            options: question.options ? JSON.stringify(question.options) : "[]",
+            questionType: part.type,
+            partId: updatedPart.id,
+            testId: updatedTest.id,
+          },
+        })
+      );
+
+      await Promise.all(questionPromises);
+    });
+
+    await Promise.all(partPromises);
+
+    // Trả về kết quả sau khi cập nhật thành công
     return NextResponse.json(
-      { message: "Test updated successfully", testId: updatedTest.id },
+      {
+        message: "Test updated successfully",
+        testId: updatedTest.id,
+        creatorId: updatedTest.creatorId,
+      },
       { status: 200 }
     );
   } catch (error) {
@@ -96,11 +121,11 @@ export const PUT = async (req: Request) => {
 
     if (error instanceof ZodError) {
       return NextResponse.json({ error: error.issues }, { status: 400 });
-    } else {
-      return NextResponse.json(
-        { error: "Internal Server Error" },
-        { status: 500 }
-      );
     }
+
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 }
+    );
   }
 };

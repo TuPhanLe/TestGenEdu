@@ -1,8 +1,8 @@
-import MCQ from "@/components/MCQ";
 import { prisma } from "@/lib/db";
 import { getAuthSession } from "@/lib/nextauth";
 import { redirect } from "next/navigation";
-import React from "react";
+import { TestType } from "@prisma/client";
+import TestComponent from "@/components/forms/PlayGround/TestComponent";
 
 type Props = {
   params: {
@@ -10,60 +10,48 @@ type Props = {
   };
 };
 
-const MCQpage = async ({ params: { testId } }: Props) => {
+const TestPage = async ({ params: { testId } }: Props) => {
   const session = await getAuthSession();
   if (!session) {
     redirect("/");
   }
 
-  // Fetch the test details with attemptsAllowed, part, and questions
   const test = await prisma.test.findUnique({
     where: {
       id: testId,
     },
     include: {
       parts: {
-        select: {
-          id: true,
-          content: true,
-          questions: {
-            select: {
-              id: true,
-              question: true,
-              options: true,
-            },
-          },
+        include: {
+          questions: true,
         },
       },
     },
   });
 
-  if (!test || test.testType !== "mcq") {
+  if (!test) {
     return redirect("/quiz");
   }
 
-  const attemptsAllowed = test.attemptsAllowed ?? 1;
+  const formattedTest = {
+    testId: test.id,
+    topic: test.topic,
+    testDuration: test.testDuration ?? 60,
+    attemptsAllowed: test.attemptsAllowed ?? 1,
+    parts: test.parts.map((part) => ({
+      partId: part.id,
+      paragraph: part.content || "",
+      type: part.testType,
+      questions: part.questions.map((question) => ({
+        questionId: question.id,
+        question: question.question || "",
+        answer: question.answer,
+        options: JSON.parse(question.options as string) || [],
+      })),
+    })),
+  };
 
-  // Check if the TestAccess already exists for the user
-  const existingAccess = await prisma.testAccess.findUnique({
-    where: {
-      testId_userId: {
-        testId: test.id,
-        userId: session.user.id,
-      },
-    },
-  });
-
-  if (!existingAccess) {
-    // If it doesn't exist, create a new TestAccess record
-    await prisma.testAccess.create({
-      data: {
-        testId: test.id,
-        userId: session.user.id,
-        accessLevel: "play", // Adjust access level as needed
-      },
-    });
-  }
+  console.log("Formatted Test Data:", formattedTest);
 
   const existingResults = await prisma.testResult.findMany({
     where: {
@@ -71,27 +59,26 @@ const MCQpage = async ({ params: { testId } }: Props) => {
       studentId: session.user.id,
     },
     orderBy: {
-      attemptNumber: "desc", // Get the latest attempt
+      attemptNumber: "desc",
     },
   });
+
   const nextAttemptNumber =
     existingResults.length > 0 ? existingResults[0].attemptNumber + 1 : 0;
-  // Check if the user has exceeded the allowed attempts
-  if (nextAttemptNumber >= attemptsAllowed) {
+
+  if (nextAttemptNumber >= formattedTest.attemptsAllowed) {
     return (
       <div>
-        <h2>
-          Error: You have reached the maximum number of attempts for this test.
-        </h2>
+        <h2>You have reached the maximum number of attempts.</h2>
       </div>
     );
   }
-  // If the TestResult doesn't exist, create a new one with the first attempt
+
   await prisma.testResult.create({
     data: {
       testId: testId,
       studentId: session.user.id,
-      studentAnswers: [], // Initialize studentAnswers as an empty array
+      studentAnswers: [],
       startTime: new Date(),
       totalScore: 10, // Assuming total score is 10
       attemptNumber: nextAttemptNumber,
@@ -99,12 +86,12 @@ const MCQpage = async ({ params: { testId } }: Props) => {
   });
 
   return (
-    <MCQ
-      game={test}
+    <TestComponent
+      test={formattedTest}
       timeStarted={new Date()}
       attemptNumber={nextAttemptNumber}
     />
   );
 };
 
-export default MCQpage;
+export default TestPage;

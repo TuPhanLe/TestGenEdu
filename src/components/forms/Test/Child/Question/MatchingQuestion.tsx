@@ -19,6 +19,9 @@ const MatchingQuestion = ({ form, partIndex, qIndex }: any) => {
     control: form.control,
     name: `parts.${partIndex}.questions.${qIndex}.options`,
   });
+  React.useEffect(() => {
+    form.setValue(`parts.${partIndex}.questions.${qIndex}.options`, []);
+  }, [form, partIndex, qIndex]);
 
   return (
     <>

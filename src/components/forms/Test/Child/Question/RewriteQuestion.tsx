@@ -9,6 +9,12 @@ import {
 import { Input } from "@/components/ui/input";
 
 const RewriteQuestion = ({ form, partIndex, qIndex }: any) => {
+  // Sử dụng useEffect để đặt giá trị cho options khi component được render
+  React.useEffect(() => {
+    form.setValue(`parts.${partIndex}.questions.${qIndex}.options`, []);
+    form.setValue(`parts.${partIndex}.paragraph`, "");
+  }, [form, partIndex, qIndex]);
+
   return (
     <>
       {/* Trường nhập câu hỏi cần viết lại */}

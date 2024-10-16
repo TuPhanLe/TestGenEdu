@@ -128,7 +128,6 @@ model Test {
   createdAt       DateTime    @default(now())
   parts           Part[]
   questions       Question[]
-  testType        TestType
   creator         User        @relation("CreatedTests", fields: [creatorId], references: [id], onDelete: Cascade)
   folder          Folder?     @relation(fields: [folderId], references: [id], onDelete: SetNull)
   accessibleBy    TestAccess[]
@@ -179,7 +178,6 @@ model Question {
   test              Test?      @relation(fields: [testId], references: [id], onDelete: Cascade)
   part              Part?      @relation(fields: [partId], references: [id], onDelete: Cascade)
 
-  @@unique([question, partId])
   @@index([testId], name: "testId")
   @@index([partId], name: "partId")  // Đổi tên từ paragraphId sang partId
 }

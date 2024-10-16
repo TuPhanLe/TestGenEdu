@@ -138,7 +138,7 @@ const Part = ({
           {form.watch(`parts.${index}.type`) !== "rewrite" && (
             <FormField
               control={form.control}
-              name={`parts.${index}.part`}
+              name={`parts.${index}.paragraph`}
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Paragraph</FormLabel>

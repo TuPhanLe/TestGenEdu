@@ -16,6 +16,11 @@ import {
 } from "@/components/ui/select";
 
 const TrueFalseQuestion = ({ form, partIndex, qIndex }: any) => {
+  // Ensure options are set to an empty array for True/False questions
+  React.useEffect(() => {
+    form.setValue(`parts.${partIndex}.questions.${qIndex}.options`, []);
+  }, [form, partIndex, qIndex]);
+
   return (
     <>
       {/* Question Field */}
@@ -45,7 +50,14 @@ const TrueFalseQuestion = ({ form, partIndex, qIndex }: any) => {
             <FormLabel>Answer (True/False)</FormLabel>
             <FormControl>
               <Select
-                onValueChange={(value) => field.onChange(value)}
+                onValueChange={(value) => {
+                  field.onChange(value);
+                  // Ensure options are always set to an empty array for True/False questions
+                  form.setValue(
+                    `parts.${partIndex}.questions.${qIndex}.options`,
+                    []
+                  );
+                }}
                 defaultValue={field.value || "true"} // Default to "True" if no value is set
               >
                 <SelectTrigger>
