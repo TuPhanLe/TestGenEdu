@@ -1,31 +1,27 @@
 "use client";
-
 import React, { useState, useEffect } from "react";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
-// Hàm trộn ngẫu nhiên danh sách options
+type FillUpQuestion = {
+  questionId: string;
+  question: string; // Nội dung câu hỏi
+  options: string[]; // Các lựa chọn
+  answer: string; // Đáp án đúng
+};
+
+type FillUpProps = {
+  questions: FillUpQuestion[];
+  onSaveAnswer: (result: { questionId: string; userAnswer: string }) => void;
+};
 const shuffleArray = (array: string[]) => {
   return [...array].sort(() => Math.random() - 0.5); // Tạo bản sao để không thay đổi mảng gốc
 };
-
-const optionLabels = ["A", "B", "C", "D", "E"]; // Sử dụng ký hiệu ABCDE...
-
-type MCQProps = {
-  questions: {
-    questionId: string;
-    question: string;
-    options: string[];
-    answer: string;
-  }[];
-  onSaveAnswer: (result: { questionId: string; userAnswer: string }) => void;
-};
-
-const MCQ: React.FC<MCQProps> = ({ questions, onSaveAnswer }) => {
+const FillUp: React.FC<FillUpProps> = ({ questions, onSaveAnswer }) => {
   const [selectedOptions, setSelectedOptions] = useState<
     Record<string, string | null>
   >(() => questions.reduce((acc, q) => ({ ...acc, [q.questionId]: null }), {}));
-
   const [formattedQuestions, setFormattedQuestions] = useState(() =>
     questions.map((question) => ({
       ...question,
@@ -33,7 +29,13 @@ const MCQ: React.FC<MCQProps> = ({ questions, onSaveAnswer }) => {
     }))
   );
 
-  // **Effect để cập nhật câu hỏi khi props `questions` thay đổi**
+  const handleOptionChange = (questionId: string, option: string) => {
+    setSelectedOptions((prev) => ({
+      ...prev,
+      [questionId]: option,
+    }));
+    onSaveAnswer({ questionId, userAnswer: option }); // Lưu kết quả khi chọn câu trả lời
+  };
   useEffect(() => {
     setFormattedQuestions(
       questions.map((question) => ({
@@ -46,16 +48,8 @@ const MCQ: React.FC<MCQProps> = ({ questions, onSaveAnswer }) => {
     );
   }, [questions]);
 
-  const handleOptionChange = (questionId: string, option: string) => {
-    setSelectedOptions((prev) => ({
-      ...prev,
-      [questionId]: option,
-    }));
-    onSaveAnswer({ questionId, userAnswer: option }); // Lưu kết quả khi chọn câu trả lời
-  };
-
   return (
-    <div className="flex flex-col items-center justify-center w-full ">
+    <div className="flex flex-col items-center justify-center w-full">
       <Card className="w-full">
         <CardHeader>
           <CardTitle>Answer All Questions</CardTitle>
@@ -76,14 +70,14 @@ const MCQ: React.FC<MCQProps> = ({ questions, onSaveAnswer }) => {
                         ? "default"
                         : "outline"
                     }
-                    className="w-full text-left py-4"
+                    className="w-full text-left py-4" // Căn trái nội dung
                     onClick={() =>
                       handleOptionChange(question.questionId, option)
                     }
                   >
                     <div className="flex items-center">
                       <div className="p-2 px-3 mr-4 border rounded-md">
-                        {optionLabels[optIndex]}
+                        {String.fromCharCode(65 + optIndex)} {/* ABCD */}
                       </div>
                       <div>{option}</div>
                     </div>
@@ -98,4 +92,4 @@ const MCQ: React.FC<MCQProps> = ({ questions, onSaveAnswer }) => {
   );
 };
 
-export default MCQ;
+export default FillUp;

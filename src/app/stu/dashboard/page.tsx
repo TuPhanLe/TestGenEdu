@@ -6,6 +6,7 @@ import { getAuthSession } from "@/lib/nextauth";
 import { UserRole } from "@prisma/client";
 import { redirect } from "next/navigation";
 import React from "react";
+import Countdown from "@/components/TimeDuration";
 
 type Props = {};
 
@@ -31,7 +32,7 @@ const Dasboard = async (props: Props) => {
       <div className="flex items-center">
         <h2 className="mr-2 text-3xl font-bold tracking-tight">Dashboard</h2>
       </div>
-
+      {/* <Countdown timeDuration={100} /> */}
       <div className="grid gap-4 mt-4 md:grid-cols-2">
         <JoinTest />
         <HistoryCard />

@@ -3,6 +3,7 @@ import { getAuthSession } from "@/lib/nextauth";
 import { redirect } from "next/navigation";
 import { TestType } from "@prisma/client";
 import TestComponent from "@/components/forms/PlayGround/TestComponent";
+import Countdown from "@/components/TimeDuration";
 
 type Props = {
   params: {
@@ -74,23 +75,26 @@ const TestPage = async ({ params: { testId } }: Props) => {
     );
   }
 
-  await prisma.testResult.create({
-    data: {
-      testId: testId,
-      studentId: session.user.id,
-      studentAnswers: [],
-      startTime: new Date(),
-      totalScore: 10, // Assuming total score is 10
-      attemptNumber: nextAttemptNumber,
-    },
-  });
+  // await prisma.testResult.create({
+  //   data: {
+  //     testId: testId,
+  //     studentId: session.user.id,
+  //     studentAnswers: [],
+  //     startTime: new Date(),
+  //     totalScore: 10, // Assuming total score is 10
+  //     attemptNumber: nextAttemptNumber,
+  //   },
+  // });
 
   return (
-    <TestComponent
-      test={formattedTest}
-      timeStarted={new Date()}
-      attemptNumber={nextAttemptNumber}
-    />
+    <>
+      <TestComponent
+        test={formattedTest}
+        timeStarted={new Date()}
+        attemptNumber={nextAttemptNumber}
+      />
+      {/* <Countdown timeDuration={2000} /> */}
+    </>
   );
 };
 
