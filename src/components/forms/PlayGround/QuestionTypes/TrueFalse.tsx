@@ -1,5 +1,6 @@
 "use client";
-import React, { useState } from "react";
+
+import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
@@ -9,18 +10,15 @@ type TrueFalseProps = {
     question: string;
   }[];
   onSaveAnswer: (result: { questionId: string; userAnswer: string }) => void; // Callback để lưu kết quả
+  selectedOptions: Record<string, string | null>; // Nhận selectedOptions từ component cha
 };
 
-const TrueFalse: React.FC<TrueFalseProps> = ({ questions, onSaveAnswer }) => {
-  const [selectedAnswers, setSelectedAnswers] = useState<
-    Record<string, string | null>
-  >(() => questions.reduce((acc, q) => ({ ...acc, [q.questionId]: null }), {}));
-
+const TrueFalse: React.FC<TrueFalseProps> = ({
+  questions,
+  onSaveAnswer,
+  selectedOptions, // Nhận selectedOptions từ component cha
+}) => {
   const handleOptionChange = (questionId: string, answer: string) => {
-    setSelectedAnswers((prev) => ({
-      ...prev,
-      [questionId]: answer,
-    }));
     onSaveAnswer({ questionId, userAnswer: answer }); // Gọi callback khi chọn câu trả lời
   };
 
@@ -39,9 +37,9 @@ const TrueFalse: React.FC<TrueFalseProps> = ({ questions, onSaveAnswer }) => {
               <div className="flex gap-4">
                 <Button
                   variant={
-                    selectedAnswers[question.questionId] === "true"
-                      ? "default"
-                      : "outline"
+                    selectedOptions[question.questionId] === "true"
+                      ? "default" // Đã chọn "True"
+                      : "outline" // Chưa chọn
                   }
                   className="w-1/2"
                   onClick={() =>
@@ -52,9 +50,9 @@ const TrueFalse: React.FC<TrueFalseProps> = ({ questions, onSaveAnswer }) => {
                 </Button>
                 <Button
                   variant={
-                    selectedAnswers[question.questionId] === "false"
-                      ? "default"
-                      : "outline"
+                    selectedOptions[question.questionId] === "false"
+                      ? "default" // Đã chọn "False"
+                      : "outline" // Chưa chọn
                   }
                   className="w-1/2"
                   onClick={() =>

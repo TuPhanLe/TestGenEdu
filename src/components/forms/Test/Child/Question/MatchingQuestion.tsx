@@ -87,7 +87,7 @@ const MatchingQuestion = ({ form, partIndex, qIndex }: any) => {
       ))}
 
       {/* Nút để thêm đáp án nhiễu */}
-      <div className="flex justify-end mt-2">
+      {/* <div className="flex justify-end mt-2">
         <Button
           type="button"
           onClick={() => appendOption({ value: "" })} // Thêm một option mới
@@ -95,7 +95,7 @@ const MatchingQuestion = ({ form, partIndex, qIndex }: any) => {
         >
           Add Option
         </Button>
-      </div>
+      </div> */}
     </>
   );
 };

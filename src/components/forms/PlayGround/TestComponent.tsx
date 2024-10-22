@@ -1,5 +1,11 @@
 "use client";
-import React, { useState, useCallback, useRef, useMemo } from "react";
+import React, {
+  useState,
+  useCallback,
+  useRef,
+  useMemo,
+  useEffect,
+} from "react";
 import { TestSchemaType } from "@/schemas/form/test";
 import PartRenderer from "./PartRender";
 import { Timer as TimerIcon, ChevronRight, ChevronLeft } from "lucide-react";
@@ -15,6 +21,11 @@ import Link from "next/link";
 import Timer from "./Timer";
 import { formatTimeDelta } from "@/lib/utils";
 import { addMinutes, differenceInSeconds } from "date-fns";
+
+// Hàm trộn ngẫu nhiên mảng
+const shuffleArray = <T,>(array: T[]): T[] => {
+  return [...array].sort(() => Math.random() - 0.5);
+};
 
 type TestComponentProps = {
   test: TestSchemaType;
@@ -32,12 +43,20 @@ const TestComponent: React.FC<TestComponentProps> = ({
   timeStarted,
   attemptNumber,
 }) => {
+  const [shuffledParts, setShuffledParts] = useState(
+    () => shuffleArray(test.parts) // Shuffle các part ngay từ đầu
+  );
+
   const [partIndex, setPartIndex] = useState<number>(0);
   const [hasEnded, setHasEnded] = useState<boolean>(false);
   const hasFinishedRef = useRef<boolean>(false);
   const [results, setResults] = useState<ResultState[]>([]);
   const { toast } = useToast();
   const [isConfirmOpen, setIsConfirmOpen] = useState<boolean>(false);
+
+  const [selectedOptions, setSelectedOptions] = useState<
+    Record<string, string | null>
+  >({});
 
   const endTime = useMemo(
     () => addMinutes(timeStarted, test.testDuration),
@@ -54,6 +73,11 @@ const TestComponent: React.FC<TestComponentProps> = ({
       ...prevResults.filter((r) => r.questionId !== result.questionId),
       result,
     ]);
+
+    setSelectedOptions((prev) => ({
+      ...prev,
+      [result.questionId]: result.userAnswer,
+    }));
   }, []);
 
   const handleSubmitResults = useCallback(() => {
@@ -74,12 +98,12 @@ const TestComponent: React.FC<TestComponentProps> = ({
   }, [handleSubmitResults]);
 
   const handleNextPart = useCallback(() => {
-    if (partIndex < test.parts.length - 1) {
+    if (partIndex < shuffledParts.length - 1) {
       setPartIndex((prev) => prev + 1);
     } else {
       setIsConfirmOpen(true);
     }
-  }, [partIndex, test.parts.length]);
+  }, [partIndex, shuffledParts.length]);
 
   const handlePreviousPart = useCallback(() => {
     if (partIndex > 0) {
@@ -101,7 +125,7 @@ const TestComponent: React.FC<TestComponentProps> = ({
     );
   }
 
-  const currentPart = test.parts[partIndex];
+  const currentPart = shuffledParts[partIndex];
 
   return (
     <div className="md:w-[80vw] max-w-8xl w-[90vw] mx-auto">
@@ -121,13 +145,17 @@ const TestComponent: React.FC<TestComponentProps> = ({
           />
         </div>
         <div>
-          Part {partIndex + 1} of {test.parts.length}
+          Part {partIndex + 1} of {shuffledParts.length}
         </div>
       </div>
 
       {/* Main Content */}
       <div className="p-4 border rounded-lg mt-4">
-        <PartRenderer part={currentPart} onSaveAnswer={handleSaveAnswer} />
+        <PartRenderer
+          part={currentPart}
+          onSaveAnswer={handleSaveAnswer}
+          selectedOptions={selectedOptions}
+        />
       </div>
 
       <div className="flex justify-between mt-4">
@@ -139,7 +167,7 @@ const TestComponent: React.FC<TestComponentProps> = ({
           <ChevronLeft className="mr-2" /> Previous
         </Button>
         <Button onClick={handleNextPart}>
-          {partIndex === test.parts.length - 1 ? "Finish Test" : "Next Part"}
+          {partIndex === shuffledParts.length - 1 ? "Finish Test" : "Next Part"}
           <ChevronRight className="ml-2" />
         </Button>
       </div>

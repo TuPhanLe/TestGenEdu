@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   FormField,
   FormItem,
@@ -7,11 +7,11 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 const RewriteQuestion = ({ form, partIndex, qIndex }: any) => {
-  // Sử dụng useEffect để đặt giá trị cho options khi component được render
-  React.useEffect(() => {
-    form.setValue(`parts.${partIndex}.questions.${qIndex}.options`, []);
+  // Đặt options và paragraph mặc định khi component render
+  useEffect(() => {
     form.setValue(`parts.${partIndex}.paragraph`, "");
   }, [form, partIndex, qIndex]);
 
@@ -25,10 +25,25 @@ const RewriteQuestion = ({ form, partIndex, qIndex }: any) => {
           <FormItem>
             <FormLabel>Rewrite Question</FormLabel>
             <FormControl>
-              <Input
+              <Textarea
                 placeholder="Enter the text to be rewritten..."
                 {...field}
               />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      {/* Trường nhập Option (Hint) */}
+      <FormField
+        control={form.control}
+        name={`parts.${partIndex}.questions.${qIndex}.options[0]`} // Truy cập vào phần tử đầu tiên của options
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Option / Hint (Optional)</FormLabel>
+            <FormControl>
+              <Input placeholder="Enter an option or hint..." {...field} />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -43,7 +58,10 @@ const RewriteQuestion = ({ form, partIndex, qIndex }: any) => {
           <FormItem>
             <FormLabel>Rewritten Answer</FormLabel>
             <FormControl>
-              <Input placeholder="Enter the rewritten answer..." {...field} />
+              <Textarea
+                placeholder="Enter the rewritten answer..."
+                {...field}
+              />
             </FormControl>
             <FormMessage />
           </FormItem>

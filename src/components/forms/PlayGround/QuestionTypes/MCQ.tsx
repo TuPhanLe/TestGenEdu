@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
@@ -19,38 +19,23 @@ type MCQProps = {
     answer: string;
   }[];
   onSaveAnswer: (result: { questionId: string; userAnswer: string }) => void;
+  selectedOptions: Record<string, string | null>; // Nhận selectedOptions từ component cha
 };
 
-const MCQ: React.FC<MCQProps> = ({ questions, onSaveAnswer }) => {
-  const [selectedOptions, setSelectedOptions] = useState<
-    Record<string, string | null>
-  >(() => questions.reduce((acc, q) => ({ ...acc, [q.questionId]: null }), {}));
-
-  const [formattedQuestions, setFormattedQuestions] = useState(() =>
+const MCQ: React.FC<MCQProps> = ({
+  questions,
+  onSaveAnswer,
+  selectedOptions,
+}) => {
+  // Trộn ngẫu nhiên options chỉ 1 lần khi mount vào
+  const [formattedQuestions] = useState(() =>
     questions.map((question) => ({
       ...question,
       options: shuffleArray([...question.options, question.answer]),
     }))
   );
 
-  // **Effect để cập nhật câu hỏi khi props `questions` thay đổi**
-  useEffect(() => {
-    setFormattedQuestions(
-      questions.map((question) => ({
-        ...question,
-        options: shuffleArray([...question.options, question.answer]),
-      }))
-    );
-    setSelectedOptions(
-      questions.reduce((acc, q) => ({ ...acc, [q.questionId]: null }), {})
-    );
-  }, [questions]);
-
   const handleOptionChange = (questionId: string, option: string) => {
-    setSelectedOptions((prev) => ({
-      ...prev,
-      [questionId]: option,
-    }));
     onSaveAnswer({ questionId, userAnswer: option }); // Lưu kết quả khi chọn câu trả lời
   };
 
@@ -73,7 +58,7 @@ const MCQ: React.FC<MCQProps> = ({ questions, onSaveAnswer }) => {
                     key={optIndex}
                     variant={
                       selectedOptions[question.questionId] === option
-                        ? "default"
+                        ? "default" // Hiển thị dạng mặc định nếu đã chọn
                         : "outline"
                     }
                     className="w-full text-left py-4"
