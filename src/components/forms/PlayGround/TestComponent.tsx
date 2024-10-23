@@ -6,6 +6,7 @@ import React, {
   useMemo,
   useEffect,
 } from "react";
+import axios from "axios"; // Import Axios
 import { TestSchemaType } from "@/schemas/form/test";
 import PartRenderer from "./PartRender";
 import { Timer as TimerIcon, ChevronRight, ChevronLeft } from "lucide-react";
@@ -43,17 +44,15 @@ const TestComponent: React.FC<TestComponentProps> = ({
   timeStarted,
   attemptNumber,
 }) => {
-  const [shuffledParts, setShuffledParts] = useState(
-    () => shuffleArray(test.parts) // Shuffle các part ngay từ đầu
+  const [shuffledParts, setShuffledParts] = useState(() =>
+    shuffleArray(test.parts)
   );
-
   const [partIndex, setPartIndex] = useState<number>(0);
   const [hasEnded, setHasEnded] = useState<boolean>(false);
   const hasFinishedRef = useRef<boolean>(false);
   const [results, setResults] = useState<ResultState[]>([]);
   const { toast } = useToast();
   const [isConfirmOpen, setIsConfirmOpen] = useState<boolean>(false);
-
   const [selectedOptions, setSelectedOptions] = useState<
     Record<string, string | null>
   >({});
@@ -80,14 +79,38 @@ const TestComponent: React.FC<TestComponentProps> = ({
     }));
   }, []);
 
+  const submitTestResults = async (submissionData: any) => {
+    try {
+      const response = await axios.post("/api/result/finish", submissionData);
+      console.log("Submission Response:", response.data);
+
+      toast({
+        title: "Test Submitted!",
+        description: "Your answers have been saved.",
+        variant: "success",
+      });
+    } catch (error) {
+      console.error("Error submitting test results:", error);
+
+      toast({
+        title: "Submission Failed",
+        description: "There was an error submitting your answers.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleSubmitResults = useCallback(() => {
-    console.log("Test Results:", results);
-    toast({
-      title: "Test Submitted!",
-      description: "Your answers have been saved.",
-      variant: "success",
-    });
-  }, [results, toast]);
+    const submissionData = {
+      testId: test.testId, // Bổ sung testId
+      results: results,
+      startTime: timeStarted,
+      endTime: new Date(), // Thời điểm submit
+    };
+
+    console.log("Submission Data:", submissionData);
+    submitTestResults(submissionData); // Gửi dữ liệu xuống backend
+  }, [results, timeStarted, test.testId]);
 
   const handleFinish = useCallback(() => {
     if (hasFinishedRef.current) return;
@@ -110,6 +133,22 @@ const TestComponent: React.FC<TestComponentProps> = ({
       setPartIndex((prev) => prev - 1);
     }
   }, [partIndex]);
+
+  // Lắng nghe sự kiện phím trái/phải để chuyển part
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "ArrowRight") {
+        handleNextPart();
+      } else if (event.key === "ArrowLeft") {
+        handlePreviousPart();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [handleNextPart, handlePreviousPart]);
 
   if (hasEnded) {
     return (

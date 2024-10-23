@@ -15,7 +15,7 @@ import { signOut } from "next-auth/react";
 import { LogOut, Settings } from "lucide-react";
 
 type Props = {
-  user: Pick<User, "name" | "image" | "email" | "role">;
+  user: Pick<User, "name" | "email" | "role">;
 };
 
 const UserAccountNav = ({ user }: Props) => {

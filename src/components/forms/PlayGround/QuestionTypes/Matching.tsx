@@ -51,7 +51,12 @@ const Matching: React.FC<MatchingProps> = ({
         <Card className="w-full p-4">
           <CardHeader>
             <CardTitle>Matching Questions</CardTitle>
+            <p className="text-sm text-gray-600 mt-2">
+              Match the correct answer to each question by selecting from the
+              dropdown. Each answer can only be used once.
+            </p>
           </CardHeader>
+
           <CardContent>
             <div className="grid grid-cols-2 gap-8">
               {/* Cột bên trái: Câu hỏi */}

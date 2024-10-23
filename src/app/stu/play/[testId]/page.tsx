@@ -52,7 +52,7 @@ const TestPage = async ({ params: { testId } }: Props) => {
     })),
   };
 
-  console.log("Formatted Test Data:", formattedTest);
+  // console.log("Formatted Test Data:", formattedTest);
 
   const existingResults = await prisma.testResult.findMany({
     where: {

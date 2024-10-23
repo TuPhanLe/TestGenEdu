@@ -18,7 +18,7 @@ export const POST = async (req: Request) => {
     // Parse and validate the request body
     const body = await req.json();
     const { name, description, selectedTest } = folderSchema.parse(body);
-    console.log(body);
+    // console.log(body);
 
     // Create the folder in the database
     const folder = await prisma.folder.create({

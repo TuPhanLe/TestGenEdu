@@ -12,7 +12,8 @@ const JoinTest = (props: Props) => {
     <Card
       className="hover:cursor-pointer hover:opacity-75"
       onClick={() => {
-        router.push("/stu/play/cm2dbio8k00002v6qj9ppojbt");
+        // router.push("/stu/play/cm2dbio8k00002v6qj9ppojbt");
+        router.push("/stu/selection");
       }}
     >
       <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">

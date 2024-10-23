@@ -2,11 +2,12 @@ import HistoryCard from "@/components/dashboard/HistoryCard";
 import HotTopicsCard from "@/components/dashboard/HotTopicsCard";
 import RecentActivityCard from "@/components/dashboard/RecentActivityCard";
 import JoinTest from "@/components/dashboard/JoinTest";
+import WordOfTheDay from "@/components/dashboard/WordOfTheDay";
 import { getAuthSession } from "@/lib/nextauth";
 import { UserRole } from "@prisma/client";
 import { redirect } from "next/navigation";
 import React from "react";
-import Countdown from "@/components/TimeDuration";
+import UserInfoCard from "@/components/dashboard/UserInfo";
 
 type Props = {};
 
@@ -15,7 +16,8 @@ export const metadata = {
   description: "English is easy!",
 };
 
-const Dasboard = async (props: Props) => {
+// Hàm lấy thông tin người dùng từ Prisma dựa trên userId
+const Dashboard = async (props: Props) => {
   const session = await getAuthSession();
 
   if (!session?.user) {
@@ -27,22 +29,20 @@ const Dasboard = async (props: Props) => {
     return null;
   }
 
+  // Lấy thông tin người dùng từ Prisma
+
   return (
     <main className="p-8 mx-auto max-w-7xl">
-      <div className="flex items-center">
-        <h2 className="mr-2 text-3xl font-bold tracking-tight">Dashboard</h2>
-      </div>
-      {/* <Countdown timeDuration={100} /> */}
       <div className="grid gap-4 mt-4 md:grid-cols-2">
         <JoinTest />
         <HistoryCard />
       </div>
       <div className="grid gap-4 mt-4 md:grid-cols-2 lg:grid-cols-7">
-        <HotTopicsCard />
+        <UserInfoCard userId={session?.user.id} />
         <RecentActivityCard />
       </div>
     </main>
   );
 };
 
-export default Dasboard;
+export default Dashboard;

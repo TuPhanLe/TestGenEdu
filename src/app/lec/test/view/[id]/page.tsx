@@ -45,7 +45,7 @@ const View = async ({ params: { id } }: Props) => {
     notFound();
     return null;
   }
-  console.log(folder.tests);
+  // console.log(folder.tests);
 
   // Truyền danh sách tests vào component TestList
   return (

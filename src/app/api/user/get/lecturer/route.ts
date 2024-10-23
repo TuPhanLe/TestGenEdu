@@ -7,7 +7,7 @@ export async function GET(req: Request) {
     // Lấy thông tin userName từ query parameters
     const { searchParams } = new URL(req.url);
     const userName = searchParams.get("userName");
-    console.log(userName);
+    // console.log(userName);
 
     // Nếu không có userName, trả về lỗi
     if (!userName) {

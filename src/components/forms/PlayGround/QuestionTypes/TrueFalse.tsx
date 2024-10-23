@@ -26,7 +26,10 @@ const TrueFalse: React.FC<TrueFalseProps> = ({
     <div className="flex flex-col items-center justify-center w-full">
       <Card className="w-full ">
         <CardHeader>
-          <CardTitle>Answer True/False Questions</CardTitle>
+          <CardTitle>
+            Please read each question carefully and select the most accurate
+            answer
+          </CardTitle>
         </CardHeader>
         <CardContent>
           {questions.map((question, index) => (

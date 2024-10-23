@@ -20,7 +20,7 @@ export const POST = async (req: Request) => {
     const { testId, topic, testDuration, attemptsAllowed, folderId, parts } =
       testSchema.parse(body);
 
-    console.log(body);
+    // console.log(body);
 
     // Create the test in the database
     const test = await prisma.test.create({

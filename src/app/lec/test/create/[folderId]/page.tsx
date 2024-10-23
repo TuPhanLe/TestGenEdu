@@ -24,7 +24,7 @@ const Quiz = async ({ params }: Props) => {
   }
 
   const { folderId } = params; // Extract folderId from params
-  console.log(folderId);
+  // console.log(folderId);
 
   return <CreateTest folderId={folderId} />;
 };

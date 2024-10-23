@@ -68,7 +68,7 @@ const EditPage = async ({ params: { id } }: Props) => {
       })),
     };
 
-    console.log("Formatted Test Data:", formattedTest);
+    // console.log("Formatted Test Data:", formattedTest);
 
     // Trả về component EditTest với dữ liệu đã được format
     return <EditTest test={formattedTest} />;

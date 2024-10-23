@@ -2,17 +2,22 @@ import { NextResponse } from "next/server";
 import { ZodError, z } from "zod";
 import { getAuthSession } from "@/lib/nextauth";
 import { prisma } from "@/lib/db";
-
-// Define the schema for request validation
+// Định nghĩa schema xác thực dữ liệu từ FE
 const updateTestResultSchema = z.object({
-  testId: z.string(),
-  startTime: z.string(), // ISO 8601 date string
-  endTime: z.string().optional(), // Optional endTime
+  testId: z.string(), // ID bài kiểm tra
+  startTime: z.string(), // Chuỗi thời gian ISO 8601
+  endTime: z.string().optional(), // Thời gian kết thúc, tùy chọn
+  results: z.array(
+    z.object({
+      questionId: z.string(), // ID câu hỏi
+      userAnswer: z.string(), // Đáp án của người dùng
+    })
+  ),
 });
 
 export const POST = async (req: Request) => {
   try {
-    // Authenticate the user
+    // Xác thực người dùng
     const session = await getAuthSession();
     if (!session?.user) {
       return NextResponse.json(
@@ -21,15 +26,16 @@ export const POST = async (req: Request) => {
       );
     }
 
-    // Parse and validate the request body
+    // Phân tích và xác thực dữ liệu từ body request
     const body = await req.json();
-    const { testId, startTime, endTime } = updateTestResultSchema.parse(body);
+    const { testId, startTime, endTime, results } =
+      updateTestResultSchema.parse(body);
 
-    // Find the test to get total number of questions
+    // Tìm bài kiểm tra dựa vào testId
     const test = await prisma.test.findUnique({
       where: { id: testId },
       include: {
-        questions: true, // Include related questions to get the total number of questions
+        questions: true, // Bao gồm câu hỏi để lấy đáp án đúng
       },
     });
 
@@ -40,58 +46,72 @@ export const POST = async (req: Request) => {
     const totalQuestions = test.questions.length;
     const studentId = session.user.id;
 
-    // Find the latest TestResult based on testId, studentId, and highest attemptNumber
-    const latestTestResult = await prisma.testResult.findFirst({
-      where: {
-        testId: testId,
-        studentId: studentId,
-      },
-      orderBy: {
-        attemptNumber: "desc",
-      },
-    });
+    // Duyệt qua từng câu trả lời của người dùng và so sánh với đáp án đúng
+    let correctAnswersCount = 0;
 
-    if (!latestTestResult) {
-      return NextResponse.json(
-        { error: "TestResult not found" },
-        { status: 404 }
-      );
+    for (const result of results) {
+      const question = test.questions.find((q) => q.id === result.questionId);
+
+      if (!question) continue; // Bỏ qua nếu không tìm thấy câu hỏi
+
+      const isCorrect = isAnswerCorrect(question.answer, result.userAnswer);
+
+      if (isCorrect) {
+        correctAnswersCount++;
+      }
     }
 
-    // Calculate number of correct answers and score
-    const studentAnswers = latestTestResult.studentAnswers as {
-      questionId: string;
-      isCorrect: boolean;
-      userAnswer: string;
-    }[];
+    // Tính điểm dựa trên số câu trả lời đúng
+    const score = (correctAnswersCount / totalQuestions) * 10;
+    const passed = score > 5; // Đậu nếu điểm > 5
 
-    const correctAnswersCount = studentAnswers.filter(
-      (answer) => answer.isCorrect
-    ).length;
-
-    // Calculate score based on correct answers
-    const score = (correctAnswersCount / totalQuestions) * 10; // Assuming a score out of 10
-    const passed = score > 5; // Pass if score is above 5
-
-    // Update the TestResult record
-    const updatedTestResult = await prisma.testResult.update({
-      where: {
-        id: latestTestResult.id,
-      },
-      data: {
-        startTime: new Date(startTime),
-        endTime: endTime ? new Date(endTime) : null,
-        score,
-        totalScore: 10, // Assuming total score is 10
-        passed,
-        studentAnswers: studentAnswers, // Update studentAnswers
-        attemptNumber: latestTestResult.attemptNumber, // Increment attemptNumber
-      },
+    // Tìm lần làm bài gần nhất
+    const latestAttempt = await prisma.testResult.findFirst({
+      where: { testId, studentId },
+      orderBy: { attemptNumber: "desc" },
     });
 
-    // Return a successful response
+    const attemptNumber = latestAttempt ? latestAttempt.attemptNumber + 1 : 1;
+
+    // Kiểm tra xem đã có bản ghi nào trước đó chưa
+    if (latestAttempt) {
+      // Cập nhật kết quả làm bài nếu đã có
+      await prisma.testResult.update({
+        where: { id: latestAttempt.id },
+        data: {
+          startTime: new Date(startTime),
+          endTime: endTime ? new Date(endTime) : null,
+          score,
+          totalScore: 10,
+          passed,
+          studentAnswers: results,
+          attemptNumber,
+        },
+      });
+    } else {
+      // Tạo mới kết quả nếu chưa có
+      await prisma.testResult.create({
+        data: {
+          testId,
+          studentId,
+          startTime: new Date(startTime),
+          endTime: endTime ? new Date(endTime) : null,
+          score,
+          totalScore: 10,
+          passed,
+          studentAnswers: results,
+          attemptNumber: 1, // Bắt đầu với lần làm đầu tiên
+        },
+      });
+    }
+
+    // Trả về phản hồi thành công
     return NextResponse.json(
-      { message: "TestResult updated successfully", score },
+      {
+        message: "TestResult updated successfully",
+        score,
+        passed,
+      },
       { status: 200 }
     );
   } catch (error) {
@@ -106,4 +126,43 @@ export const POST = async (req: Request) => {
       );
     }
   }
+};
+
+// Hàm kiểm tra độ tương thích của hai chuỗi
+const levenshteinDistance = (a: string, b: string): number => {
+  const dp = Array.from({ length: a.length + 1 }, () =>
+    Array(b.length + 1).fill(0)
+  );
+
+  for (let i = 0; i <= a.length; i++) dp[i][0] = i;
+  for (let j = 0; j <= b.length; j++) dp[0][j] = j;
+
+  for (let i = 1; i <= a.length; i++) {
+    for (let j = 1; j <= b.length; j++) {
+      if (a[i - 1] === b[j - 1]) {
+        dp[i][j] = dp[i - 1][j - 1];
+      } else {
+        dp[i][j] = Math.min(
+          dp[i - 1][j] + 1, // Xóa
+          dp[i][j - 1] + 1, // Thêm
+          dp[i - 1][j - 1] + 1 // Thay thế
+        );
+      }
+    }
+  }
+
+  return dp[a.length][b.length];
+};
+
+const isAnswerCorrect = (
+  correctAnswer: string,
+  userAnswer: string
+): boolean => {
+  const distance = levenshteinDistance(
+    correctAnswer.trim().toLowerCase(),
+    userAnswer.trim().toLowerCase()
+  );
+  const maxLen = Math.max(correctAnswer.length, userAnswer.length);
+  const similarity = 1 - distance / maxLen;
+  return similarity >= 0.8; // Nếu tương đồng >= 80% thì coi là đúng
 };

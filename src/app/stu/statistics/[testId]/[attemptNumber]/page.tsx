@@ -57,8 +57,8 @@ const Statistics = async ({ params: { testId, attemptNumber } }: Props) => {
     test.questions.length > 0
       ? (totalCorrect / test.questions.length) * 100
       : 0;
-  console.log(testResult.endTime);
-  console.log(testResult.startTime);
+  // console.log(testResult.endTime);
+  // console.log(testResult.startTime);
 
   return (
     <div className="p-8 mx-auto max-w-7xl">

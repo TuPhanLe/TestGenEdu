@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 
 type RewriteProps = {
@@ -19,18 +19,31 @@ const Rewrite: React.FC<RewriteProps> = ({
   onSaveAnswer,
   selectedOptions,
 }) => {
+  const [shuffledQuestions, setShuffledQuestions] = useState<
+    RewriteProps["questions"]
+  >([]);
+
+  // Hàm trộn ngẫu nhiên các câu hỏi
+  const shuffleArray = <T,>(array: T[]): T[] =>
+    [...array].sort(() => Math.random() - 0.5);
+
+  useEffect(() => {
+    // Trộn câu hỏi khi component được mount lần đầu
+    setShuffledQuestions(shuffleArray(questions));
+  }, [questions]);
+
   const handleChange = (questionId: string, value: string) => {
     onSaveAnswer({ questionId, userAnswer: value }); // Cập nhật selectedOptions qua hàm cha
   };
 
   return (
     <div className="space-y-8">
-      {questions.map((q) => (
+      {shuffledQuestions.map((q, index) => (
         <div key={q.questionId} className="space-y-4">
-          {/* Câu hỏi cần viết lại */}
+          {/* Số thứ tự và câu hỏi */}
           <div>
             <label className="block text-sm font-medium mb-1">
-              Rewrite the following sentence:
+              {index + 1}. Rewrite the following sentence:
             </label>
             <Textarea value={q.question} readOnly className="resize-none" />
           </div>

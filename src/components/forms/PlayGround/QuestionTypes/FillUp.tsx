@@ -45,7 +45,10 @@ const FillUp: React.FC<FillUpProps> = ({
     <div className="flex flex-col items-center justify-center w-full">
       <Card className="w-full">
         <CardHeader>
-          <CardTitle>Answer All Questions</CardTitle>
+          <CardTitle>
+            Please read each question carefully and select the most accurate
+            answer
+          </CardTitle>
         </CardHeader>
         <CardContent>
           {formattedQuestions.map((question, index) => (
