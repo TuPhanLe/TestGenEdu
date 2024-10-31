@@ -4,7 +4,12 @@ import React, { useEffect, useState } from "react";
 
 import FolderList from "@/components/list/FolderList";
 import Link from "next/link";
-import { LucideLayoutDashboard, PlusCircleIcon } from "lucide-react";
+import {
+  AlertTriangle,
+  Loader,
+  LucideLayoutDashboard,
+  PlusCircleIcon,
+} from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Folder, Test } from "@prisma/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
@@ -38,11 +43,25 @@ const ViewFolder = (prop: Props) => {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
-
-  if (isPending) return <div>Loading...</div>;
-
-  if (isError) return <div>Error loading </div>;
-
+  if (isPending) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <Loader className="animate-spin w-8 h-8 text-black-500" />
+        <p className="ml-2 text-black-500">Loading...</p>
+      </div>
+    );
+  }
+  if (isError) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full text-red-500">
+        <AlertTriangle className="w-10 h-10 mb-2" />
+        <p>Error.</p>
+        <Button className="mt-4" onClick={() => fetchData()}>
+          Try again
+        </Button>
+      </div>
+    );
+  }
   return (
     <div className="flex h-screen">
       <div className="flex-1 h-full px-4 py-6 lg:px-8">

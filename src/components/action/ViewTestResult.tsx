@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { AlertTriangle, Loader, LucideLayoutDashboard } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import Link from "next/link";
+import TestResultList from "../list/TestResultList";
 
 interface Props {}
 
@@ -17,7 +18,7 @@ const fetchTests = async (): Promise<Test[]> => {
   return response.data.tests;
 };
 
-const ViewTest: React.FC<Props> = () => {
+const ViewTestResult: React.FC<Props> = () => {
   const {
     mutate: fetchData,
     data: tests = [],
@@ -54,11 +55,11 @@ const ViewTest: React.FC<Props> = () => {
     <div className="flex h-screen">
       <div className="flex-1 h-full px-4 py-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          <TestList tests={tests} />
+          <TestResultList tests={tests} />
         </div>
       </div>
     </div>
   );
 };
 
-export default ViewTest;
+export default ViewTestResult;

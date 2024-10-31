@@ -32,16 +32,18 @@ const Dashboard = async (props: Props) => {
   // Lấy thông tin người dùng từ Prisma
 
   return (
-    <main className="p-8 mx-auto max-w-7xl">
-      <div className="grid gap-4 mt-4 md:grid-cols-2">
-        <JoinTest />
-        <HistoryCard />
-      </div>
-      <div className="grid gap-4 mt-4 md:grid-cols-2 lg:grid-cols-7">
-        <UserInfoCard userId={session?.user.id} />
-        <RecentActivityCard />
-      </div>
-    </main>
+    <>
+      <main className="p-8 mx-auto max-w-7xl">
+        <div className="grid gap-4 mt-4 md:grid-cols-2">
+          <JoinTest />
+          <HistoryCard />
+        </div>
+        <div className="grid gap-4 mt-4 md:grid-cols-2 lg:grid-cols-7">
+          <UserInfoCard userId={session?.user.id} />
+          <RecentActivityCard />
+        </div>
+      </main>
+    </>
   );
 };
 

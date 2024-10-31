@@ -34,9 +34,7 @@ export const POST = async (req: Request) => {
     // Tìm bài kiểm tra dựa vào testId
     const test = await prisma.test.findUnique({
       where: { id: testId },
-      include: {
-        questions: true, // Bao gồm câu hỏi để lấy đáp án đúng
-      },
+      include: { questions: true },
     });
 
     if (!test) {
@@ -48,59 +46,34 @@ export const POST = async (req: Request) => {
 
     // Duyệt qua từng câu trả lời của người dùng và so sánh với đáp án đúng
     let correctAnswersCount = 0;
-
     for (const result of results) {
       const question = test.questions.find((q) => q.id === result.questionId);
-
-      if (!question) continue; // Bỏ qua nếu không tìm thấy câu hỏi
-
+      if (!question) continue;
       const isCorrect = isAnswerCorrect(question.answer, result.userAnswer);
-
-      if (isCorrect) {
-        correctAnswersCount++;
-      }
+      if (isCorrect) correctAnswersCount++;
     }
 
     // Tính điểm dựa trên số câu trả lời đúng
     const score = (correctAnswersCount / totalQuestions) * 10;
-    const passed = score > 5; // Đậu nếu điểm > 5
+    const passed = score > 5;
 
-    // Tìm lần làm bài gần nhất
+    // Tìm bản ghi gần nhất cho lần làm bài này
     const latestAttempt = await prisma.testResult.findFirst({
       where: { testId, studentId },
       orderBy: { attemptNumber: "desc" },
     });
 
-    const attemptNumber = latestAttempt ? latestAttempt.attemptNumber + 1 : 1;
-
-    // Kiểm tra xem đã có bản ghi nào trước đó chưa
     if (latestAttempt) {
-      // Cập nhật kết quả làm bài nếu đã có
+      // Nếu đã có bản ghi, cập nhật nó
       await prisma.testResult.update({
         where: { id: latestAttempt.id },
         data: {
           startTime: new Date(startTime),
           endTime: endTime ? new Date(endTime) : null,
           score,
-          totalScore: 10,
+          totalScore: 10, // Giả định tổng điểm là 10
           passed,
-          studentAnswers: results,
-          attemptNumber,
-        },
-      });
-    } else {
-      // Tạo mới kết quả nếu chưa có
-      await prisma.testResult.create({
-        data: {
-          testId,
-          studentId,
-          startTime: new Date(startTime),
-          endTime: endTime ? new Date(endTime) : null,
-          score,
-          totalScore: 10,
-          passed,
-          studentAnswers: results,
-          attemptNumber: 1, // Bắt đầu với lần làm đầu tiên
+          studentAnswers: results, // Cập nhật câu trả lời của người dùng
         },
       });
     }
@@ -109,8 +82,6 @@ export const POST = async (req: Request) => {
     return NextResponse.json(
       {
         message: "TestResult updated successfully",
-        score,
-        passed,
       },
       { status: 200 }
     );

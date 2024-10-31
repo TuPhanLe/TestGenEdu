@@ -32,6 +32,11 @@ export const testSchema = z.object({
   attemptsAllowed: z.coerce.number().int().positive(),
   parts: z.array(partSchema),
 });
+export const checkAnswerSchema = z.object({
+  questionId: z.string().nonempty({ message: "Question ID is required" }),
+  userInput: z.string().nonempty({ message: "Answer input cannot be empty" }),
+});
+export type TestSchemaTypeAuth = z.infer<typeof checkAnswerSchema>;
 
 // TypeScript types inferred from the Zod schema
 export type TestSchemaType = z.infer<typeof testSchema>;

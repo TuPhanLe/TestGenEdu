@@ -6,7 +6,7 @@ import React, {
   useMemo,
   useEffect,
 } from "react";
-import axios from "axios"; // Import Axios
+import axios from "axios";
 import { TestSchemaType } from "@/schemas/form/test";
 import PartRenderer from "./PartRender";
 import { Timer as TimerIcon, ChevronRight, ChevronLeft } from "lucide-react";
@@ -23,7 +23,6 @@ import Timer from "./Timer";
 import { formatTimeDelta } from "@/lib/utils";
 import { addMinutes, differenceInSeconds } from "date-fns";
 
-// Hàm trộn ngẫu nhiên mảng
 const shuffleArray = <T,>(array: T[]): T[] => {
   return [...array].sort(() => Math.random() - 0.5);
 };
@@ -89,6 +88,8 @@ const TestComponent: React.FC<TestComponentProps> = ({
         description: "Your answers have been saved.",
         variant: "success",
       });
+
+      return true; // Trả về true nếu gửi thành công
     } catch (error) {
       console.error("Error submitting test results:", error);
 
@@ -97,27 +98,33 @@ const TestComponent: React.FC<TestComponentProps> = ({
         description: "There was an error submitting your answers.",
         variant: "destructive",
       });
+
+      return false; // Trả về false nếu có lỗi
     }
   };
 
-  const handleSubmitResults = useCallback(() => {
+  const handleSubmitResults = useCallback(async () => {
     const submissionData = {
-      testId: test.testId, // Bổ sung testId
+      testId: test.testId,
       results: results,
       startTime: timeStarted,
-      endTime: new Date(), // Thời điểm submit
+      endTime: new Date(),
     };
 
     console.log("Submission Data:", submissionData);
-    submitTestResults(submissionData); // Gửi dữ liệu xuống backend
+
+    const isSuccess = await submitTestResults(submissionData); // Chờ phản hồi từ server
+
+    if (isSuccess) {
+      setHasEnded(true); // Chỉ cập nhật hasEnded nếu gửi thành công
+    }
   }, [results, timeStarted, test.testId]);
 
   const handleFinish = useCallback(() => {
-    if (hasFinishedRef.current) return;
+    if (hasFinishedRef.current) return; // Ngăn gửi nhiều lần
 
-    handleSubmitResults();
-    hasFinishedRef.current = true;
-    setHasEnded(true);
+    handleSubmitResults(); // Gửi kết quả và xử lý phản hồi
+    hasFinishedRef.current = true; // Đánh dấu đã gửi
   }, [handleSubmitResults]);
 
   const handleNextPart = useCallback(() => {
@@ -134,7 +141,6 @@ const TestComponent: React.FC<TestComponentProps> = ({
     }
   }, [partIndex]);
 
-  // Lắng nghe sự kiện phím trái/phải để chuyển part
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "ArrowRight") {
@@ -157,9 +163,12 @@ const TestComponent: React.FC<TestComponentProps> = ({
         <p>
           You finished in <span>{formatTimeDelta(elapsedTime)}</span>
         </p>
-        <Link className="mt-4" href="/stu/dashboard">
+        <p>
+          Attempt Number <span>{attemptNumber}</span>
+        </p>
+        <a className="mt-4" href="/stu/dashboard" target="_self">
           Back to Dashboard
-        </Link>
+        </a>
       </div>
     );
   }
@@ -168,7 +177,6 @@ const TestComponent: React.FC<TestComponentProps> = ({
 
   return (
     <div className="md:w-[80vw] max-w-8xl w-[90vw] mx-auto">
-      {/* Sticky Header */}
       <div className="sticky top-0 bg-white z-10 shadow p-4 flex flex-row justify-between">
         <div className="flex flex-col">
           <p>
@@ -186,9 +194,12 @@ const TestComponent: React.FC<TestComponentProps> = ({
         <div>
           Part {partIndex + 1} of {shuffledParts.length}
         </div>
+
+        <div>
+          Attempt Number <span>{attemptNumber}</span>
+        </div>
       </div>
 
-      {/* Main Content */}
       <div className="p-4 border rounded-lg mt-4">
         <PartRenderer
           part={currentPart}
@@ -211,7 +222,6 @@ const TestComponent: React.FC<TestComponentProps> = ({
         </Button>
       </div>
 
-      {/* Confirmation Dialog */}
       <Dialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
         <DialogContent>
           <DialogHeader>

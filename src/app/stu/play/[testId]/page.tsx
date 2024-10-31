@@ -52,8 +52,6 @@ const TestPage = async ({ params: { testId } }: Props) => {
     })),
   };
 
-  // console.log("Formatted Test Data:", formattedTest);
-
   const existingResults = await prisma.testResult.findMany({
     where: {
       testId: testId,
@@ -65,7 +63,8 @@ const TestPage = async ({ params: { testId } }: Props) => {
   });
 
   const nextAttemptNumber =
-    existingResults.length > 0 ? existingResults[0].attemptNumber + 1 : 0;
+    existingResults.length > 0 ? existingResults[0].attemptNumber + 1 : 1;
+  console.log(nextAttemptNumber);
 
   if (nextAttemptNumber >= formattedTest.attemptsAllowed) {
     return (
@@ -75,16 +74,16 @@ const TestPage = async ({ params: { testId } }: Props) => {
     );
   }
 
-  // await prisma.testResult.create({
-  //   data: {
-  //     testId: testId,
-  //     studentId: session.user.id,
-  //     studentAnswers: [],
-  //     startTime: new Date(),
-  //     totalScore: 10, // Assuming total score is 10
-  //     attemptNumber: nextAttemptNumber,
-  //   },
-  // });
+  await prisma.testResult.create({
+    data: {
+      testId: testId,
+      studentId: session.user.id,
+      studentAnswers: [],
+      startTime: new Date(),
+      totalScore: 10, // Assuming total score is 10
+      attemptNumber: nextAttemptNumber,
+    },
+  });
 
   return (
     <>
@@ -93,7 +92,6 @@ const TestPage = async ({ params: { testId } }: Props) => {
         timeStarted={new Date()}
         attemptNumber={nextAttemptNumber}
       />
-      {/* <Countdown timeDuration={2000} /> */}
     </>
   );
 };

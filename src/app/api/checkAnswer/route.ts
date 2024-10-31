@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
-import { checkAnswerSchema } from "@/schemas/form/test";
+import { checkAnswerSchema, testSchema } from "@/schemas/form/test";
 import { prisma } from "@/lib/db";
 import { getAuthSession } from "@/lib/nextauth"; // Adjust the path as needed
 

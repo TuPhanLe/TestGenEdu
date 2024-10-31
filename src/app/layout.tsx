@@ -18,10 +18,10 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className="w-full md:max-w-8xl">
       <body>
         <Providers>
-          <div className="w-full md:max-w-8xl">{children}</div>
+          {children}
           <Toaster />
         </Providers>
       </body>

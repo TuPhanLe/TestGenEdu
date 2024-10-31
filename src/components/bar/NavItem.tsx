@@ -2,6 +2,7 @@ import { usePathname } from "next/navigation";
 import {
   Bell,
   Briefcase,
+  FileCheck2,
   FileText,
   Folder,
   Home,
@@ -102,10 +103,10 @@ export const NavItems = (admin: boolean = false): NavItem[] => {
       position: "top",
     },
     {
-      name: "Notifications",
-      href: "/lec/notifications",
-      icon: <Bell size={19} />,
-      active: isNavItemActive(pathname, "/lec/notifications"),
+      name: "Result",
+      href: "/lec/result/view",
+      icon: <FileCheck2 size={19} />,
+      active: isNavItemActive(pathname, "/lec/result/view"),
       position: "top",
     },
     {
