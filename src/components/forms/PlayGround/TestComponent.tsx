@@ -9,7 +9,12 @@ import React, {
 import axios from "axios";
 import { TestSchemaType } from "@/schemas/form/test";
 import PartRenderer from "./PartRender";
-import { Timer as TimerIcon, ChevronRight, ChevronLeft } from "lucide-react";
+import {
+  Timer as TimerIcon,
+  ChevronRight,
+  ChevronLeft,
+  LucideLayoutDashboard,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import {
@@ -166,8 +171,15 @@ const TestComponent: React.FC<TestComponentProps> = ({
         <p>
           Attempt Number <span>{attemptNumber}</span>
         </p>
-        <a className="mt-4" href="/stu/dashboard" target="_self">
+        {/* <a className="mt-4" href="/stu/dashboard" target="_self">
           Back to Dashboard
+        </a> */}
+        <a
+          href="/stu/dashboard"
+          className="px-4 py-2 bg-black text-white font-semibold rounded-lg hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-600"
+        >
+          <LucideLayoutDashboard className="inline-block mr-2" />
+          <button>Back to Dashboard</button>
         </a>
       </div>
     );
@@ -177,10 +189,10 @@ const TestComponent: React.FC<TestComponentProps> = ({
 
   return (
     <div className="md:w-[80vw] max-w-8xl w-[90vw] mx-auto">
-      <div className="sticky top-0 bg-white z-10 shadow p-4 flex flex-row justify-between">
-        <div className="flex flex-col">
+      <div className="sticky top-0 bg-white z-10 shadow p-4 flex flex-row justify-between mt-4">
+        {/* <div className="flex flex-col">
           <p>
-            <span className="text-slate-400 mr-2">Topic</span>
+            <span className="text-slate-400 mr-2">TOPIC</span>
             <span className="px-2 py-1 text-white rounded-lg bg-slate-800">
               {test.topic}
             </span>
@@ -192,11 +204,48 @@ const TestComponent: React.FC<TestComponentProps> = ({
           />
         </div>
         <div>
-          Part {partIndex + 1} of {shuffledParts.length}
+          <span className="text-slate-400 mr-2">PART </span>
+          <span className="px-2 py-1 text-white rounded-lg bg-slate-800">
+            {partIndex + 1} of {shuffledParts.length}
+          </span>
         </div>
 
         <div>
-          Attempt Number <span>{attemptNumber}</span>
+          Attempt: <span>{attemptNumber}</span>
+        </div> */}
+        <div className="flex flex-col">
+          <p className="m-1">
+            <span className="px-2 py-1 text-white rounded-lg bg-slate-800 mr-8">
+              TOPIC
+            </span>
+            <span className="text-500 font-semibold leading-none tracking-tight">
+              {test.topic}
+            </span>
+          </p>
+          {/* Bạn có thể thêm phần "part" và "attempt" ở đây */}
+          <p className="m-1">
+            <span className="px-2 py-1 text-white rounded-lg bg-slate-800 mr-10">
+              PART
+            </span>
+            <span className="text-500 font-semibold leading-none tracking-tight">
+              {partIndex + 1} of {shuffledParts.length}
+            </span>
+          </p>
+          <p className="m-1">
+            <span className="px-2 py-1 text-white rounded-lg bg-slate-800 mr-2">
+              ATTEMPT
+            </span>
+            <span className="text-500 font-semibold leading-none tracking-tight">
+              {attemptNumber}
+            </span>
+          </p>
+        </div>
+        <div>
+          <Timer
+            startTime={timeStarted}
+            duration={test.testDuration}
+            onEnd={handleFinish}
+          />
         </div>
       </div>
 
@@ -208,7 +257,7 @@ const TestComponent: React.FC<TestComponentProps> = ({
         />
       </div>
 
-      <div className="flex justify-between mt-4">
+      <div className="flex justify-between mt-4 mb-4">
         <Button
           variant="secondary"
           onClick={handlePreviousPart}

@@ -2,13 +2,15 @@ import AccuracyCard from "@/components/satistics/AccuracyCard";
 import QuestionList from "@/components/satistics/QuestionList";
 import ResultCard from "@/components/satistics/ResultCard";
 import TimeTakenCard from "@/components/satistics/TimeTakenCard";
-import { buttonVariants } from "@/components/ui/button";
+
 import { prisma } from "@/lib/db";
 import { getAuthSession } from "@/lib/nextauth";
 import { LucideLayoutDashboard } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import React from "react";
+import { cn } from "@/lib/utils";
+import { buttonVariants } from "@/components/ui/button";
 
 type Props = {
   params: {
@@ -23,7 +25,6 @@ const Statistics = async ({ params: { testId, attemptNumber } }: Props) => {
     return redirect("/");
   }
 
-  // // Fetch the test result based on testId, userId from session, and attemptNumber
   const testResult = await prisma.testResult.findUnique({
     where: {
       testId_studentId_attemptNumber: {
@@ -57,17 +58,18 @@ const Statistics = async ({ params: { testId, attemptNumber } }: Props) => {
     test.questions.length > 0
       ? (totalCorrect / test.questions.length) * 100
       : 0;
-  // console.log(testResult.endTime);
-  // console.log(testResult.startTime);
 
   return (
     <div className="p-8 mx-auto max-w-7xl">
       <div className="flex items-center justify-between space-y-2">
         <h2 className="text-3xl font-bold tracking-tight">Summary</h2>
         <div className="flex items-center space-x-2">
-          <Link href="/stu/dashboard" className={buttonVariants()}>
-            <LucideLayoutDashboard className="mr-2" />
-            Back to Dashboard
+          <Link
+            href="/stu/dashboard"
+            className="px-4 py-2 bg-black text-white font-semibold rounded-lg hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-600"
+          >
+            <LucideLayoutDashboard className="inline-block mr-2" />
+            <button>Back to Dashboard</button>
           </Link>
         </div>
       </div>

@@ -42,7 +42,7 @@ const HistoryComponent = async ({ limit, userId }: Props) => {
                   className="text-base font-medium leading-none underline"
                   href={`/stu/statistics/${test.id}/${attemptNumber}`}
                 >
-                  {test.topic}
+                  {test.topic} - Attempt {attemptNumber}
                 </Link>
                 <p className="flex items-center px-2 py-1 text-xs text-white rounded-lg w-fit bg-slate-800">
                   <Clock className="w-4 h-4 mr-1" />
