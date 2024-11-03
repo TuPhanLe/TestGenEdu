@@ -43,32 +43,32 @@ export const NavItems = (admin: boolean = false): NavItem[] => {
       },
       {
         name: "Manage Users",
-        href: "/admin/users",
+        href: "/#",
         icon: <User size={19} />,
         active: isNavItemActive(pathname, "/admin/users"),
         position: "top",
       },
       {
         name: "Manage Folders",
-        href: "/admin/folders",
+        href: "/#",
         icon: <Folder size={19} />,
         active: isNavItemActive(pathname, "/admin/folders"),
         position: "top",
       },
-      {
-        name: "Notifications",
-        href: "/admin/notifications",
-        icon: <Bell size={19} />,
-        active: isNavItemActive(pathname, "/admin/notifications"),
-        position: "top",
-      },
-      {
-        name: "Reports",
-        href: "/admin/reports",
-        icon: <Briefcase size={19} />,
-        active: isNavItemActive(pathname, "/admin/reports"),
-        position: "bottom",
-      },
+      // {
+      //   name: "Notifications",
+      //   href: "/admin/notifications",
+      //   icon: <Bell size={19} />,
+      //   active: isNavItemActive(pathname, "/admin/notifications"),
+      //   position: "top",
+      // },
+      // {
+      //   name: "Reports",
+      //   href: "/admin/reports",
+      //   icon: <Briefcase size={19} />,
+      //   active: isNavItemActive(pathname, "/admin/reports"),
+      //   position: "bottom",
+      // },
       {
         name: "Logout",
         href: "#", // Đặt href là "#" vì chúng ta sẽ xử lý sự kiện nhấp chuột
@@ -109,13 +109,13 @@ export const NavItems = (admin: boolean = false): NavItem[] => {
       active: isNavItemActive(pathname, "/lec/result/view"),
       position: "top",
     },
-    {
-      name: "Reports",
-      href: "/lec/reports",
-      icon: <Briefcase size={19} />,
-      active: isNavItemActive(pathname, "/lec/reports"),
-      position: "top",
-    },
+    // {
+    //   name: "Reports",
+    //   href: "/lec/reports",
+    //   icon: <Briefcase size={19} />,
+    //   active: isNavItemActive(pathname, "/lec/reports"),
+    //   position: "top",
+    // },
     {
       name: "Settings",
       href: "#", // Đặt href là "#" vì chúng ta sẽ xử lý sự kiện nhấp chuột
