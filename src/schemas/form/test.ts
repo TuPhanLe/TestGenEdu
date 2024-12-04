@@ -1,8 +1,22 @@
 import { z } from "zod";
 
+const LearningOutcomeEnum = z.enum([
+  "PL01",
+  "PL02",
+  "PL03",
+  "PL04",
+  "PL05",
+  "PL06",
+  "PL07",
+  "PL08",
+  "PL09",
+  "PL10",
+]);
+
 const questionSchema = z.object({
   questionId: z.string(),
   question: z.string().optional(),
+  outcome: LearningOutcomeEnum,
   answer: z.union([
     z.string(), // For other question types
     z.enum(["true", "false"]), // For true_false questions

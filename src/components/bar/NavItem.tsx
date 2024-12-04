@@ -116,13 +116,13 @@ export const NavItems = (admin: boolean = false): NavItem[] => {
     //   active: isNavItemActive(pathname, "/lec/reports"),
     //   position: "top",
     // },
-    {
-      name: "Settings",
-      href: "#", // Đặt href là "#" vì chúng ta sẽ xử lý sự kiện nhấp chuột
-      icon: <Settings size={19} />,
-      active: isNavItemActive(pathname, "/settings"),
-      position: "bottom",
-      onClick: handleSignOut, // Thêm hàm xử lý sự kiện nhấp chuột
-    },
+    // {
+    //   name: "Settings",
+    //   href: "#", // Đặt href là "#" vì chúng ta sẽ xử lý sự kiện nhấp chuột
+    //   icon: <Settings size={19} />,
+    //   active: isNavItemActive(pathname, "/settings"),
+    //   position: "bottom",
+    //   onClick: handleSignOut, // Thêm hàm xử lý sự kiện nhấp chuột
+    // },
   ];
 };

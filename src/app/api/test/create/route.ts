@@ -75,6 +75,7 @@ export const POST = async (req: Request) => {
                   questionType: part.type,
                   partId: createdPart.id,
                   testId: test.id,
+                  outcome: question.outcome || "PL01",
                 },
               });
             } else {

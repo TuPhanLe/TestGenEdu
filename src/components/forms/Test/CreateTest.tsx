@@ -31,6 +31,7 @@ const CreateTest = ({ folderId }: { folderId?: string }) => {
           type: "mcq",
           questions: [
             {
+              outcome: "PL07",
               questionId: cuid(),
               question: " question",
               answer: "The biodiversity of the Amazon rainforest",
@@ -49,6 +50,7 @@ const CreateTest = ({ folderId }: { folderId?: string }) => {
           type: "true_false",
           questions: [
             {
+              outcome: "PL01",
               questionId: cuid(),
               question: " question",
               answer: "false",
@@ -63,6 +65,7 @@ const CreateTest = ({ folderId }: { folderId?: string }) => {
           type: "matching",
           questions: [
             {
+              outcome: "PL01",
               questionId: cuid(),
               question: " question",
               answer: "Jaguar, Sloth, Macaw",
@@ -78,16 +81,19 @@ const CreateTest = ({ folderId }: { folderId?: string }) => {
           type: "fillup",
           questions: [
             {
+              outcome: "PL01",
               questionId: cuid(), // Lỗ trống đầu tiên
               answer: "Amazon", // Đáp án cho lỗ trống đầu tiên
               options: ["Savanna", "Desert", "Sahara"], // Các lựa chọn không bao gồm đáp án đúng
             },
             {
+              outcome: "PL01",
               questionId: cuid(), // Lỗ trống thứ hai
               answer: "forest", // Đáp án cho lỗ trống thứ hai
               options: ["ocean", "grassland", "Sahara"], // Các lựa chọn không bao gồm đáp án đúng
             },
             {
+              outcome: "PL01",
               questionId: cuid(), // Lỗ trống thứ ba
               answer: "climate regulation", // Đáp án cho lỗ trống thứ ba
               options: ["carbon storage", "water cycle", "Sahara"], // Các lựa chọn không bao gồm đáp án đúng
@@ -101,6 +107,7 @@ const CreateTest = ({ folderId }: { folderId?: string }) => {
           type: "rewrite",
           questions: [
             {
+              outcome: "PL01",
               question: " question",
               questionId: cuid(),
               answer: "The rainforest in the Amazon covers a large area.",

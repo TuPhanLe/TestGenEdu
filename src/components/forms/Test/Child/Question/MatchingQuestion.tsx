@@ -9,8 +9,26 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useFieldArray } from "react-hook-form";
-
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+} from "@/components/ui/select";
 const MatchingQuestion = ({ form, partIndex, qIndex }: any) => {
+  const LearningOutcomeEnum = [
+    "PL01",
+    "PL02",
+    "PL03",
+    "PL04",
+    "PL05",
+    "PL06",
+    "PL07",
+    "PL08",
+    "PL09",
+    "PL10",
+  ];
   const {
     fields: optionFields,
     append: appendOption,
@@ -26,6 +44,40 @@ const MatchingQuestion = ({ form, partIndex, qIndex }: any) => {
   return (
     <>
       {/* Câu hỏi chính của câu Matching */}
+      <FormField
+        name={`parts.${partIndex}.questions.${qIndex}.outcome`}
+        control={form.control}
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Learning Outcome</FormLabel>
+            <FormControl>
+              <Select
+                onValueChange={(value) => {
+                  field.onChange(value);
+                  // Ensure options are always set to an empty array for True/False questions
+                  form.setValue(
+                    `parts.${partIndex}.questions.${qIndex}.outcome`,
+                    []
+                  );
+                }}
+                defaultValue={field.value || "PL01"} // Default to "True" if no value is set
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select an outcome" />
+                </SelectTrigger>
+                <SelectContent>
+                  {LearningOutcomeEnum.map((outcome) => (
+                    <SelectItem key={outcome} value={outcome}>
+                      {outcome}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
       <FormField
         control={form.control}
         name={`parts.${partIndex}.questions.${qIndex}.question`}
@@ -85,17 +137,6 @@ const MatchingQuestion = ({ form, partIndex, qIndex }: any) => {
           )}
         />
       ))}
-
-      {/* Nút để thêm đáp án nhiễu */}
-      {/* <div className="flex justify-end mt-2">
-        <Button
-          type="button"
-          onClick={() => appendOption({ value: "" })} // Thêm một option mới
-          variant="outline"
-        >
-          Add Option
-        </Button>
-      </div> */}
     </>
   );
 };

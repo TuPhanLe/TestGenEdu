@@ -46,10 +46,17 @@ enum UserStatus {
   INACTIVE
   SUSPENDED
 }
-enum LabelQuestion {
-  EASY
-  MEDIUM 
-  HARD 
+enum LearningOutcome {
+  PL01
+  PL02
+  PL03
+  PL04
+  PL05
+  PL06
+  PL07
+  PL08
+  PL09
+  PL10
 }
 enum TestType {
   mcq
@@ -177,7 +184,7 @@ model Question {
   isCorrect         Boolean?
   test              Test?      @relation(fields: [testId], references: [id], onDelete: Cascade)
   part              Part?      @relation(fields: [partId], references: [id], onDelete: Cascade)
-
+  outcome           LearningOutcome @default(PL01)
   @@index([testId], name: "testId")
   @@index([partId], name: "partId")  // Đổi tên từ paragraphId sang partId
 }

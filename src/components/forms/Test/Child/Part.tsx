@@ -60,6 +60,7 @@ const Part = ({
         appendQuestion({
           questionId: cuid(),
           question: "",
+          outcome: "PL01",
           answer: "",
           options: null, // Không cần options cho câu hỏi True/False
         });
@@ -70,6 +71,7 @@ const Part = ({
       case "rewrite":
         appendQuestion({
           questionId: cuid(),
+          outcome: "PL01",
           question: "",
           answer: "",
           options: ["", "", ""],
