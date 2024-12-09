@@ -24,25 +24,6 @@ const CreateTest = ({ folderId }: { folderId?: string }) => {
       testDuration: 60,
       attemptsAllowed: 1,
       parts: [
-        // Multiple Choice Question (MCQ)
-        {
-          partId: cuid(),
-          paragraph: "In the heart of the Amazon rainforest...",
-          type: "mcq",
-          questions: [
-            {
-              outcome: "PL07",
-              questionId: cuid(),
-              question: " question",
-              answer: "The biodiversity of the Amazon rainforest",
-              options: [
-                "The mysteries of the ocean",
-                "The history of ancient civilizations",
-                "The exploration of outer space",
-              ],
-            },
-          ],
-        },
         // True/False Question
         {
           partId: cuid(),
@@ -115,6 +96,25 @@ const CreateTest = ({ folderId }: { folderId?: string }) => {
             },
           ],
         },
+        // Multiple Choice Question (MCQ)
+        {
+          partId: cuid(),
+          paragraph: "In the heart of the Amazon rainforest...",
+          type: "mcq",
+          questions: [
+            {
+              outcome: "PL07",
+              questionId: cuid(),
+              question: " question",
+              answer: "The biodiversity of the Amazon rainforest",
+              options: [
+                "The mysteries of the ocean",
+                "The history of ancient civilizations",
+                "The exploration of outer space",
+              ],
+            },
+          ],
+        },
       ],
     },
   });
@@ -141,6 +141,7 @@ const CreateTest = ({ folderId }: { folderId?: string }) => {
 
   const onSubmit = (data: any) => {
     createTest(data);
+    console.log(data);
   };
 
   return (

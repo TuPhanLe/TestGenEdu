@@ -14,7 +14,11 @@ import {
   SelectItem,
   SelectValue,
 } from "@/components/ui/select";
+import LearningOutcomeSelect from "../LearningOutcome/LearningOutcomeSelect";
 const FillupQuestion = ({ form, partIndex, qIndex }: any) => {
+  React.useEffect(() => {
+    form.setValue(`parts.${partIndex}.questions.${qIndex}.options`, []);
+  }, [form, partIndex, qIndex]);
   const outcomes = [
     "PL01",
     "PL02",
@@ -31,40 +35,11 @@ const FillupQuestion = ({ form, partIndex, qIndex }: any) => {
   return (
     <>
       {/* Trường cho đáp án đúng */}
-      <FormField
-        name={`parts.${partIndex}.questions.${qIndex}.outcome`}
-        control={form.control}
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Learning Outcome</FormLabel>
-            <FormControl>
-              <Select
-                onValueChange={(value) => {
-                  field.onChange(value);
-                  // Ensure options are always set to an empty array for True/False questions
-                  form.setValue(
-                    `parts.${partIndex}.questions.${qIndex}.outcome`,
-                    []
-                  );
-                }}
-                defaultValue={field.value || "PL01"} // Default to "True" if no value is set
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select an outcome" />
-                </SelectTrigger>
-                <SelectContent>
-                  {outcomes.map((outcome) => (
-                    <SelectItem key={outcome} value={outcome}>
-                      {outcome}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+      <LearningOutcomeSelect
+        form={form}
+        partIndex={partIndex}
+        qIndex={qIndex}
+      />{" "}
       <FormField
         control={form.control}
         name={`parts.${partIndex}.questions.${qIndex}.answer`}
@@ -78,7 +53,6 @@ const FillupQuestion = ({ form, partIndex, qIndex }: any) => {
           </FormItem>
         )}
       />
-
       {/* Các lựa chọn (options) */}
       {Array(3)
         .fill("")

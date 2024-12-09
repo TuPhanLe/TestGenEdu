@@ -46,6 +46,7 @@ const TestPage = async ({ params: { testId } }: Props) => {
       paragraph: part.content || "",
       type: part.testType,
       questions: part.questions.map((question) => ({
+        outcome: question.outcome,
         questionId: question.id,
         question: question.question || "",
         answer: question.answer,
@@ -83,7 +84,7 @@ const TestPage = async ({ params: { testId } }: Props) => {
     timeStarted = new Date(); // Thời gian bắt đầu mới
   }
 
-  if (nextAttemptNumber >= formattedTest.attemptsAllowed) {
+  if (nextAttemptNumber >= formattedTest.attemptsAllowed + 1) {
     return (
       <div className="flex flex-col items-center justify-center h-screen p-4 bg-gray-100">
         <div className="flex flex-col items-center p-6 rounded-lg shadow-md max-w-lg">
@@ -105,28 +106,6 @@ const TestPage = async ({ params: { testId } }: Props) => {
           </Link>
         </div>
       </div>
-    );
-  }
-  if (nextAttemptNumber >= formattedTest.attemptsAllowed) {
-    return (
-      <>
-        <AlertCircle className="text-red-500 w-12 h-12 mb-4" />
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">
-          Maximum Attempts Reached
-        </h2>
-        <p className="text-gray-600 mb-4 text-center">
-          You have reached the maximum number of attempts allowed for this test.
-          Please contact your instructor or administrator for further
-          assistance.
-        </p>
-        <Link
-          href="/stu/dashboard"
-          className="px-4 py-2 bg-black text-white font-semibold rounded-lg hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-600"
-        >
-          <LucideLayoutDashboard className="inline-block mr-2" />
-          <button>Back to Dashboard</button>
-        </Link>
-      </>
     );
   }
 

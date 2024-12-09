@@ -17,7 +17,9 @@ const JoinTest = (props: Props) => {
       }}
     >
       <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-        <CardTitle className="text-2xl font-bold">Let's Make a Test!</CardTitle>
+        <CardTitle className="text-2xl font-bold">
+          Let&apos;s Make a Test!
+        </CardTitle>
         <Feather size={28} strokeWidth={2.5} />
       </CardHeader>
       <CardContent>

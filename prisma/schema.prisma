@@ -46,6 +46,10 @@ enum UserStatus {
   INACTIVE
   SUSPENDED
 }
+enum ResultStatus {
+  ACTIVE
+  INACTIVE
+}
 enum LearningOutcome {
   PL01
   PL02
@@ -204,6 +208,7 @@ model TestResult {
   test           Test     @relation(fields: [testId], references: [id], onDelete: Cascade)
   student        User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
   attemptNumber  Int       @default(0)
+  showResult     ResultStatus @default(INACTIVE)
 
   @@unique([testId, studentId, attemptNumber])
   @@index([testId])

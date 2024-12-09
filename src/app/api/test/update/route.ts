@@ -89,6 +89,7 @@ export const PUT = async (req: Request) => {
             questionType: part.type,
             partId: updatedPart.id,
             testId: updatedTest.id,
+            outcome: question.outcome,
           },
           create: {
             id: question.questionId,
@@ -98,6 +99,7 @@ export const PUT = async (req: Request) => {
             questionType: part.type,
             partId: updatedPart.id,
             testId: updatedTest.id,
+            outcome: question.outcome,
           },
         })
       );

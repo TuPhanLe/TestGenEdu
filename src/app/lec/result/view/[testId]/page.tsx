@@ -33,7 +33,11 @@ const View = async ({ params }: Props) => {
   // Lấy thông tin của bài kiểm tra
   const test = await prisma.test.findUnique({
     where: { id: testId },
-    select: { topic: true, testDuration: true, attemptsAllowed: true },
+    select: {
+      topic: true,
+      testDuration: true,
+      attemptsAllowed: true,
+    },
   });
 
   if (!test) {
@@ -52,7 +56,15 @@ const View = async ({ params }: Props) => {
     },
   });
 
-  console.log(testResults);
+  // Lấy trường showResult riêng biệt
+  const showResults = await prisma.testResult.findMany({
+    where: { testId: testId },
+    select: {
+      showResult: true,
+    },
+  });
+
+  console.log(showResults);
 
   return (
     <div className="p-8 mx-auto max-w-7xl">

@@ -131,5 +131,6 @@ const PartRenderer: React.FC<PartRendererProps> = React.memo(
     );
   }
 );
+PartRenderer.displayName = "PartRenderer";
 
 export default React.memo(PartRenderer);

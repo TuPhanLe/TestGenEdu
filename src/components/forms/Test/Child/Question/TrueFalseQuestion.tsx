@@ -14,6 +14,7 @@ import {
   SelectItem,
   SelectValue,
 } from "@/components/ui/select";
+import LearningOutcomeSelect from "../LearningOutcome/LearningOutcomeSelect";
 
 const TrueFalseQuestion = ({ form, partIndex, qIndex }: any) => {
   // Ensure options are set to an empty array for True/False questions
@@ -36,40 +37,11 @@ const TrueFalseQuestion = ({ form, partIndex, qIndex }: any) => {
   return (
     <>
       {/* Question Field */}
-      <FormField
-        name={`parts.${partIndex}.questions.${qIndex}.outcome`}
-        control={form.control}
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Learning Outcome</FormLabel>
-            <FormControl>
-              <Select
-                onValueChange={(value) => {
-                  field.onChange(value);
-                  // Ensure options are always set to an empty array for True/False questions
-                  form.setValue(
-                    `parts.${partIndex}.questions.${qIndex}.outcome`,
-                    []
-                  );
-                }}
-                defaultValue={field.value || "PL01"} // Default to "True" if no value is set
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select an outcome" />
-                </SelectTrigger>
-                <SelectContent>
-                  {LearningOutcomeEnum.map((outcome) => (
-                    <SelectItem key={outcome} value={outcome}>
-                      {outcome}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+      <LearningOutcomeSelect
+        form={form}
+        partIndex={partIndex}
+        qIndex={qIndex}
+      />{" "}
       <FormField
         control={form.control}
         name={`parts.${partIndex}.questions.${qIndex}.question`}
@@ -86,7 +58,6 @@ const TrueFalseQuestion = ({ form, partIndex, qIndex }: any) => {
           </FormItem>
         )}
       />
-
       {/* Answer Field (True/False Select) */}
       <FormField
         control={form.control}

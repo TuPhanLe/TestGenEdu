@@ -16,6 +16,9 @@ import {
 } from "@/components/ui/select";
 import LearningOutcomeSelect from "../LearningOutcome/LearningOutcomeSelect";
 const MCQQuestion = ({ form, partIndex, qIndex }: any) => {
+  React.useEffect(() => {
+    form.setValue(`parts.${partIndex}.questions.${qIndex}.options`, []);
+  }, [form, partIndex, qIndex]);
   const LearningOutcomeEnumList = [
     "PL01",
     "PL02",

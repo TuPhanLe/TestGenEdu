@@ -58,6 +58,7 @@ const EditPage = async ({ params: { id } }: Props) => {
         paragraph: part.content || "", // Đoạn văn cho các loại câu hỏi có đoạn văn
         type: part.testType,
         questions: part.questions.map((question) => ({
+          outcome: question.outcome,
           questionId: question.id,
           question: question.question || "", // Có thể bỏ trống cho các loại như fillup
           answer: question.answer,

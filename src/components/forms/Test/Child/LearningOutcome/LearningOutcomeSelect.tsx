@@ -16,16 +16,16 @@ import {
 
 // Dữ liệu kết quả học tập
 const LearningOutcomeEnumList = [
-  { value: "PL01", label: "PL01 - Understanding Basic Concepts" },
-  { value: "PL02", label: "PL02 - Application of Knowledge" },
-  { value: "PL03", label: "PL03 - Analytical Thinking" },
-  { value: "PL04", label: "PL04 - Critical Evaluation" },
-  { value: "PL05", label: "PL05 - Communication Skills" },
-  { value: "PL06", label: "PL06 - Research Methodology" },
-  { value: "PL07", label: "PL07 - Practical Skills" },
-  { value: "PL08", label: "PL08 - Collaboration and Teamwork" },
-  { value: "PL09", label: "PL09 - Problem Solving" },
-  { value: "PL10", label: "PL10 - Innovation and Creativity" },
+  { value: "PL01", label: "PL01" },
+  { value: "PL02", label: "PL02" },
+  { value: "PL03", label: "PL03" },
+  { value: "PL04", label: "PL04" },
+  { value: "PL05", label: "PL05" },
+  { value: "PL06", label: "PL06" },
+  { value: "PL07", label: "PL07" },
+  { value: "PL08", label: "PL08" },
+  { value: "PL09", label: "PL09" },
+  { value: "PL10", label: "PL10" },
 ];
 
 const LearningOutcomeSelect = ({ form, partIndex, qIndex }: any) => {

@@ -16,6 +16,8 @@ import {
   SelectItem,
   SelectValue,
 } from "@/components/ui/select";
+import LearningOutcomeSelect from "../LearningOutcome/LearningOutcomeSelect";
+
 const MatchingQuestion = ({ form, partIndex, qIndex }: any) => {
   const LearningOutcomeEnum = [
     "PL01",
@@ -40,44 +42,26 @@ const MatchingQuestion = ({ form, partIndex, qIndex }: any) => {
   React.useEffect(() => {
     form.setValue(`parts.${partIndex}.questions.${qIndex}.options`, []);
   }, [form, partIndex, qIndex]);
-
+  const LearningOutcomeEnumList = [
+    "PL01",
+    "PL02",
+    "PL03",
+    "PL04",
+    "PL05",
+    "PL06",
+    "PL07",
+    "PL08",
+    "PL09",
+    "PL10",
+  ];
   return (
     <>
       {/* Câu hỏi chính của câu Matching */}
-      <FormField
-        name={`parts.${partIndex}.questions.${qIndex}.outcome`}
-        control={form.control}
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Learning Outcome</FormLabel>
-            <FormControl>
-              <Select
-                onValueChange={(value) => {
-                  field.onChange(value);
-                  // Ensure options are always set to an empty array for True/False questions
-                  form.setValue(
-                    `parts.${partIndex}.questions.${qIndex}.outcome`,
-                    []
-                  );
-                }}
-                defaultValue={field.value || "PL01"} // Default to "True" if no value is set
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select an outcome" />
-                </SelectTrigger>
-                <SelectContent>
-                  {LearningOutcomeEnum.map((outcome) => (
-                    <SelectItem key={outcome} value={outcome}>
-                      {outcome}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+      <LearningOutcomeSelect
+        form={form}
+        partIndex={partIndex}
+        qIndex={qIndex}
+      />{" "}
       <FormField
         control={form.control}
         name={`parts.${partIndex}.questions.${qIndex}.question`}
@@ -91,7 +75,6 @@ const MatchingQuestion = ({ form, partIndex, qIndex }: any) => {
           </FormItem>
         )}
       />
-
       {/* Trường cho câu trả lời đúng */}
       <FormField
         control={form.control}
@@ -106,7 +89,6 @@ const MatchingQuestion = ({ form, partIndex, qIndex }: any) => {
           </FormItem>
         )}
       />
-
       {/* Hiển thị danh sách đáp án nhiễu */}
       {optionFields.map((option, optIndex) => (
         <FormField

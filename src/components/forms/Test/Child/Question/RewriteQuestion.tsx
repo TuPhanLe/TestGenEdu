@@ -15,9 +15,14 @@ import {
   SelectItem,
   SelectValue,
 } from "@/components/ui/select";
+import LearningOutcomeSelect from "../LearningOutcome/LearningOutcomeSelect";
+
 const RewriteQuestion = ({ form, partIndex, qIndex }: any) => {
   // Đặt options và paragraph mặc định khi component render
-  const LearningOutcomeEnum = [
+  React.useEffect(() => {
+    form.setValue(`parts.${partIndex}.questions.${qIndex}.options`, []);
+  }, [form, partIndex, qIndex]);
+  const LearningOutcomeEnumList = [
     "PL01",
     "PL02",
     "PL03",
@@ -29,47 +34,15 @@ const RewriteQuestion = ({ form, partIndex, qIndex }: any) => {
     "PL09",
     "PL10",
   ];
-  useEffect(() => {
-    form.setValue(`parts.${partIndex}.paragraph`, "");
-  }, [form, partIndex, qIndex]);
 
   return (
     <>
       {/* Trường nhập câu hỏi cần viết lại */}
-      <FormField
-        name={`parts.${partIndex}.questions.${qIndex}.outcome`}
-        control={form.control}
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Learning Outcome</FormLabel>
-            <FormControl>
-              <Select
-                onValueChange={(value) => {
-                  field.onChange(value);
-                  // Ensure options are always set to an empty array for True/False questions
-                  form.setValue(
-                    `parts.${partIndex}.questions.${qIndex}.outcome`,
-                    []
-                  );
-                }}
-                defaultValue={field.value || "PL01"} // Default to "True" if no value is set
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select an outcome" />
-                </SelectTrigger>
-                <SelectContent>
-                  {LearningOutcomeEnum.map((outcome) => (
-                    <SelectItem key={outcome} value={outcome}>
-                      {outcome}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+      <LearningOutcomeSelect
+        form={form}
+        partIndex={partIndex}
+        qIndex={qIndex}
+      />{" "}
       <FormField
         control={form.control}
         name={`parts.${partIndex}.questions.${qIndex}.question`}
@@ -86,7 +59,6 @@ const RewriteQuestion = ({ form, partIndex, qIndex }: any) => {
           </FormItem>
         )}
       />
-
       {/* Trường nhập Option (Hint) */}
       <FormField
         control={form.control}
@@ -101,7 +73,6 @@ const RewriteQuestion = ({ form, partIndex, qIndex }: any) => {
           </FormItem>
         )}
       />
-
       {/* Trường nhập câu trả lời đã viết lại */}
       <FormField
         control={form.control}
